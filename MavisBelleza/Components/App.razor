@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8" />
@@ -15,6 +15,13 @@
 <body>
     <Routes />
     <script src="_framework/blazor.web.js"></script>
+
+    <!-- JS Interop: Función global de alerta para cumplimiento de Unidad 2 -->
+    <script>
+        window.mostrarAlerta = function (mensaje) {
+            alert(mensaje);
+        };
+    </script>
 </body>
 
 </html>

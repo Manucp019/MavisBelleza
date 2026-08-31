@@ -1,7 +1,28 @@
 ﻿@page "/"
+@using MavisBelleza.Services
+@inject TurnoStateService StateService
+@implements IDisposable
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Mavis Belleza - Inicio</PageTitle>
 
-<h1>Hello, world!</h1>
+<main class="container my-5 text-center">
+    <h1 class="display-4 fw-bold text-primary">Bienvenida a Mavis Belleza</h1>
+    <p class="lead text-secondary mt-3">Sistema de gestión de turnos para estética.</p>
 
-Welcome to your new app.
+    <div class="card shadow-sm d-inline-block p-4 mt-4" style="max-width: 350px;">
+        <h3>Turnos Activos</h3>
+        <p class="display-6 font-weight-bold text-success">@StateService.TotalTurnos</p>
+    </div>
+</main>
+
+@code {
+    protected override void OnInitialized()
+    {
+        StateService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        StateService.OnChange -= StateHasChanged;
+    }
+}

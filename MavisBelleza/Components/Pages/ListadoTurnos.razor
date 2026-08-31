@@ -114,7 +114,10 @@
             {
                 context.Turnos.Remove(turno);
                 await context.SaveChangesAsync();
-                await JS.InvokeVoidAsync("alert", "El turno fue eliminado exitosamente."); // JS Interop
+
+                // JS Interop conectando con la función global declarada en App.razor
+                await JS.InvokeVoidAsync("mostrarAlerta", "El turno fue eliminado exitosamente.");
+
                 await CargarTurnos();
             }
         }
