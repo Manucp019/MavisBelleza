@@ -1,0 +1,122 @@
+﻿@page "/turnos"
+@using Microsoft.EntityFrameworkCore
+@using MavisBelleza.Data
+@using MavisBelleza.Models
+@using MavisBelleza.Services
+@using MavisBelleza.Components.Components_Reutilizables
+@inject IDbContextFactory<AppDbContext> DbFactory
+@inject TurnoStateService StateService
+@inject IJSRuntime JS
+
+<PageTitle>Gestión de Turnos</PageTitle>
+
+<main class="container my-4">
+    <header class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Turnos</h1>
+        <span class="badge bg-primary fs-6">Total en sistema: @StateService.TotalTurnos</span>
+    </header>
+
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <Buscador OnSearchChanged="FiltrarTurnos" />
+        </div>
+    </div>
+
+    @if (turnosPaginados == null)
+    {
+        <p>Cargando turnos...</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var turno in turnosPaginados)
+            {
+                <div class="col-12 col-md-6 col-lg-4">
+                    <TurnoCard Turno="turno" OnDelete="SolicitarEliminacion" />
+                </div>
+            }
+        </div>
+
+        <Paginador PaginaActual="paginaActual" TotalPaginas="totalPaginas" OnPageChanged="CambiarPagina" />
+    }
+</main>
+
+<ModalConfirm Mostrar="mostrarModal" OnResponse="ConfirmarEliminacion" />
+
+@code {
+    private List<TurnosModels> todosLosTurnos = new();
+    private List<TurnosModels> turnosFiltrados = new();
+    private List<TurnosModels> turnosPaginados = new();
+
+    private string filtro = string.Empty;
+    private int paginaActual = 1;
+    private int tamanoPagina = 3;
+    private int totalPaginas = 1;
+
+    private bool mostrarModal = false;
+    private int turnoIdAEliminar;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarTurnos();
+    }
+
+    private async Task CargarTurnos()
+    {
+        using var context = DbFactory.CreateDbContext();
+        todosLosTurnos = await context.Turnos.Include(t => t.Cliente).ToListAsync();
+        StateService.ActualizarTotal(todosLosTurnos.Count);
+        AplicarFiltroYPaginar();
+    }
+
+    private void FiltrarTurnos(string texto)
+    {
+        filtro = texto;
+        paginaActual = 1;
+        AplicarFiltroYPaginar();
+    }
+
+    private void AplicarFiltroYPaginar()
+    {
+        turnosFiltrados = string.IsNullOrWhiteSpace(filtro)
+            ? todosLosTurnos
+            : todosLosTurnos.Where(t => t.Servicio.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        totalPaginas = (int)Math.Ceiling(turnosFiltrados.Count / (double)tamanoPagina);
+        if (totalPaginas == 0) totalPaginas = 1;
+
+        turnosPaginados = turnosFiltrados
+            .Skip((paginaActual - 1) * tamanoPagina)
+            .Take(tamanoPagina)
+            .ToList();
+    }
+
+    private void CambiarPagina(int nuevaPagina)
+    {
+        paginaActual = nuevaPagina;
+        AplicarFiltroYPaginar();
+    }
+
+    private void SolicitarEliminacion(int id)
+    {
+        turnoIdAEliminar = id;
+        mostrarModal = true;
+    }
+
+    private async Task ConfirmarEliminacion(bool confirmado)
+    {
+        mostrarModal = false;
+        if (confirmado)
+        {
+            using var context = DbFactory.CreateDbContext();
+            var turno = await context.Turnos.FindAsync(turnoIdAEliminar);
+            if (turno != null)
+            {
+                context.Turnos.Remove(turno);
+                await context.SaveChangesAsync();
+                await JS.InvokeVoidAsync("alert", "El turno fue eliminado exitosamente."); // JS Interop
+                await CargarTurnos();
+            }
+        }
+    }
+}

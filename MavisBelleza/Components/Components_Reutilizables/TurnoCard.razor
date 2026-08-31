@@ -1,0 +1,22 @@
+﻿@using MavisBelleza.Models
+
+<article class="card turno-card shadow-sm mb-3">
+    <div class="card-body">
+        <h5 class="card-title text-primary">@Turno.Servicio</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Cliente: @Turno.Cliente?.Nombre</h6>
+        <p class="card-text">
+            <strong>Fecha:</strong> @Turno.FechaHora.ToString("dd/MM/yyyy HH:mm") hs
+        </p>
+        <div class="d-flex justify-content-between align-items-center">
+            <EstadoBadge Confirmado="@Turno.Confirmado" />
+            <button class="btn btn-outline-danger btn-sm" @onclick="() => OnDelete.InvokeAsync(Turno.Id)">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</article>
+
+@code {
+    [Parameter, EditorRequired] public TurnosModels Turno { get; set; } = default!;
+    [Parameter] public EventCallback<int> OnDelete { get; set; }
+}

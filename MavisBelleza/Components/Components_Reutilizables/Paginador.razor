@@ -1,0 +1,25 @@
+﻿<nav aria-label="Navegación">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(PaginaActual == 1 ? "disabled" : "")">
+            <button class="page-link" @onclick="() => CambiarPagina(PaginaActual - 1)">Anterior</button>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">Página @PaginaActual de @TotalPaginas</span>
+        </li>
+        <li class="page-item @(PaginaActual == TotalPaginas || TotalPaginas == 0 ? "disabled" : "")">
+            <button class="page-link" @onclick="() => CambiarPagina(PaginaActual + 1)">Siguiente</button>
+        </li>
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public int PaginaActual { get; set; }
+    [Parameter] public int TotalPaginas { get; set; }
+    [Parameter] public EventCallback<int> OnPageChanged { get; set; }
+
+    private async Task CambiarPagina(int nuevaPagina)
+    {
+        if (nuevaPagina >= 1 && nuevaPagina <= TotalPaginas)
+            await OnPageChanged.InvokeAsync(nuevaPagina);
+    }
+}

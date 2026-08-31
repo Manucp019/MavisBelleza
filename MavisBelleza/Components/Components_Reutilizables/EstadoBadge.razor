@@ -1,0 +1,7 @@
+﻿<span class="badge @(Confirmado ? "bg-success" : "bg-warning text-dark")">
+    @(Confirmado ? "Confirmado" : "Pendiente")
+</span>
+
+@code {
+    [Parameter] public bool Confirmado { get; set; }
+}

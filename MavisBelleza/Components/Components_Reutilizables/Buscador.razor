@@ -1,0 +1,11 @@
+﻿<div class="input-group search-box mb-3">
+    <input type="text" class="form-control" placeholder="Buscar por servicio..."
+           @bind="TextoBusqueda" @bind:event="oninput" @keyup="NotificarCambio" />
+</div>
+
+@code {
+    private string TextoBusqueda { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> OnSearchChanged { get; set; }
+
+    private async Task NotificarCambio() => await OnSearchChanged.InvokeAsync(TextoBusqueda);
+}

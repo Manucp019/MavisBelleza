@@ -1,0 +1,45 @@
+﻿@using MavisBelleza.Models
+
+<EditForm Model="Turno" OnValidSubmit="ManejarSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger mb-3" />
+
+    <div class="mb-3">
+        <label class="form-label">Cliente</label>
+        <InputSelect @bind-Value="Turno.ClienteId" class="form-select">
+            <option value="0">-- Seleccione un cliente --</option>
+            @foreach (var c in Clientes)
+            {
+                <option value="@c.Id">@c.Nombre</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="() => Turno.ClienteId" class="text-danger small" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Servicio</label>
+        <InputSelect @bind-Value="Turno.Servicio" class="form-select">
+            <option value="">-- Seleccione servicio --</option>
+            <option value="Limpieza Facial">Limpieza Facial</option>
+            <option value="Manicura Rusa">Manicura Rusa</option>
+            <option value="Masaje Reductor">Masaje Reductor</option>
+        </InputSelect>
+        <ValidationMessage For="() => Turno.Servicio" class="text-danger small" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Fecha y Hora</label>
+        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="Turno.FechaHora" class="form-control" />
+        <ValidationMessage For="() => Turno.FechaHora" class="text-danger small" />
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Guardar Turno</button>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public TurnosModels Turno { get; set; } = new();
+    [Parameter] public List<ClientesModels> Clientes { get; set; } = new();
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    private async Task ManejarSubmit() => await OnValidSubmit.InvokeAsync();
+}
