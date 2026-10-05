@@ -1,7 +1,13 @@
-﻿<span class="badge @(Confirmado ? "bg-success" : "bg-warning text-dark")">
-    @(Confirmado ? "Confirmado" : "Pendiente")
-</span>
+﻿<span class="badge @ObtenerClaseBadge(Estado)">@Estado</span>
 
 @code {
-    [Parameter] public bool Confirmado { get; set; }
+    [Parameter] public string Estado { get; set; } = "Pendiente";
+
+    private string ObtenerClaseBadge(string estado) => estado switch
+    {
+        "Confirmado" => "bg-success",
+        "Pendiente" => "bg-warning text-dark",
+        "Cancelado" => "bg-danger",
+        _ => "bg-secondary"
+    };
 }

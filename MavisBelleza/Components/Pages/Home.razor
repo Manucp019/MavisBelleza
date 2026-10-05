@@ -5,24 +5,43 @@
 
 <PageTitle>Mavis Belleza - Inicio</PageTitle>
 
-<main class="container my-5 text-center">
-    <h1 class="display-4 fw-bold text-primary">Bienvenida a Mavis Belleza</h1>
-    <p class="lead text-secondary mt-3">Sistema de gestión de turnos para estética.</p>
+<main class="container my-4">
+    <!-- Banner de Bienvenida -->
+    <section class="p-5 mb-4 rounded-3 text-white shadow-sm" style="background: linear-gradient(135deg, #2d5a27, #87a96b);">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold">Bienvenida a Mavis Belleza ✨</h1>
+            <p class="col-md-8 fs-5">Especialistas en Lifting de Pestañas, Laminado y Perfilado de Cejas. Reserva y gestiona tus turnos de forma rápida y sencilla.</p>
+            <a href="turnos/nuevo" class="btn btn-light btn-lg font-weight-bold text-success mt-2">Agendar Cita</a>
+        </div>
+    </section>
 
-    <div class="card shadow-sm d-inline-block p-4 mt-4" style="max-width: 350px;">
-        <h3>Turnos Activos</h3>
-        <p class="display-6 font-weight-bold text-success">@StateService.TotalTurnos</p>
+    <!-- Estado del Sistema y Resumen -->
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100 p-3" style="border-top: 5px solid #2d5a27 !important; border-radius: 12px;">
+                <div class="card-body text-center">
+                    <h5 class="text-muted fw-normal">Turnos Agendados</h5>
+                    <p class="display-4 fw-bold text-success my-2">@StateService.TotalTurnos</p>
+                    <a href="turnos" class="btn btn-outline-success btn-sm mt-2">Ver Listado Completo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 h-100 p-3" style="border-radius: 12px;">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold text-success mb-3">Nuestros Servicios Destacados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Lifting de Pestañas:</strong> Curvatura natural y nutrición para tus pestañas.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Laminado de Cejas:</strong> Fijación, volumen y diseño orgánico.</li>
+                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Perfilado de Cejas:</strong> Visagismo y depilación precisa según tu rostro.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 </main>
 
 @code {
-    protected override void OnInitialized()
-    {
-        StateService.OnChange += StateHasChanged;
-    }
-
-    public void Dispose()
-    {
-        StateService.OnChange -= StateHasChanged;
-    }
+    protected override void OnInitialized() => StateService.OnChange += StateHasChanged;
+    public void Dispose() => StateService.OnChange -= StateHasChanged;
 }

@@ -1,4 +1,16 @@
 ﻿.search-box {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-radius: 8px;
+    border-radius: 25px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f0e2ea;
 }
+
+    .search-box input {
+        border: none;
+        padding: 0.6rem 1.2rem;
+    }
+
+        .search-box input:focus {
+            box-shadow: none;
+            background-color: #fff;
+        }

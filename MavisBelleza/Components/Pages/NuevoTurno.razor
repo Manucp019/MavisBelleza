@@ -1,49 +1,28 @@
 ﻿@page "/turnos/nuevo"
-@using Microsoft.EntityFrameworkCore
-@using MavisBelleza.Data
 @using MavisBelleza.Models
 @using MavisBelleza.Components.Components_Reutilizables
-@inject IDbContextFactory<AppDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<PageTitle>Nuevo Turno</PageTitle>
+<PageTitle>Nuevo Turno - Mavis Belleza</PageTitle>
 
-<main class="container my-4" style="max-width: 600px;">
-    <header class="mb-4">
-        <h2>Agendar Nuevo Turno</h2>
-    </header>
+<main class="container my-5" style="max-width: 520px;">
+    <div class="card card-spa p-4 p-md-5">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold" style="color: #2f3e46;">Agendar Turno</h2>
+            <p class="text-muted small">Completa los datos de la clienta y el tratamiento</p>
+        </div>
 
-    @if (clientes == null)
-    {
-        <p>Cargando clientes...</p>
-    }
-    else
-    {
-        <TurnoForm Turno="nuevoTurno" Clientes="clientes" OnValidSubmit="GuardarTurno" />
-    }
+        <TurnoForm Turno="nuevoTurno" OnValidSubmit="GuardarTurno" />
+    </div>
 </main>
 
 @code {
     private TurnosModels nuevoTurno = new();
-    private List<ClientesModels> clientes = new();
-
-    protected override async Task OnInitializedAsync()
-    {
-        using var context = DbFactory.CreateDbContext();
-        clientes = await context.Clientes.ToListAsync();
-    }
 
     private async Task GuardarTurno()
     {
-        using var context = DbFactory.CreateDbContext();
-        context.Turnos.Add(nuevoTurno);
-        await context.SaveChangesAsync();
-
-        // JS Interop ejecutando la alerta global
-        await JS.InvokeVoidAsync("mostrarAlerta", "¡Turno creado exitosamente!");
-
-        // Navegación programática hacia el listado
+        await JS.InvokeVoidAsync("mostrarAlerta", "¡Turno agendado con éxito!");
         Navigation.NavigateTo("/turnos");
     }
 }

@@ -1,22 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace MavisBelleza.Models;
-
-public class TurnosModels
+﻿namespace MavisBelleza.Models
 {
-    public int Id { get; set; }
+    public class TurnosModels
+    {
+        public int Id { get; set; }
 
-    [Required(ErrorMessage = "La fecha es requerida")]
-    public DateTime FechaHora { get; set; } = DateTime.Now.AddDays(1);
+        // Campos de Cliente
+        public string NombreCliente { get; set; } = string.Empty;
+        public string ApellidoCliente { get; set; } = string.Empty;
 
-    [Required(ErrorMessage = "Seleccione un servicio")]
-    public string Servicio { get; set; } = string.Empty;
+        // Selección de Servicio y Precio
+        public string Servicio { get; set; } = string.Empty;
+        public decimal Precio { get; set; }
 
-    public bool Confirmado { get; set; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "Seleccione un cliente")]
-    public int ClienteId { get; set; }
-
-    // Cambiado de Cliente? a ClientesModels? para coincidir con la clase
-    public ClientesModels? Cliente { get; set; }
+        // Campos de Turno
+        public DateTime Fecha { get; set; } = DateTime.Today;
+        public TimeSpan Hora { get; set; } = new TimeSpan(9, 0, 0); // 09:00 por defecto
+        public string Estado { get; set; } = "Confirmado";
+    }
 }

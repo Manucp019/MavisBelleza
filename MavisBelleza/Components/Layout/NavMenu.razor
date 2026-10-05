@@ -1,28 +1,36 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">MavisBelleza</a>
+﻿<div class="top-row px-4 navbar navbar-dark d-flex flex-column align-items-start py-3" style="background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
+    <div class="container-fluid p-0 d-flex align-items-center">
+        <div class="p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="background-color: #2d5a44; width: 38px; height: 38px;">
+            <i class="bi bi-sparkles text-white fs-5"></i>
+        </div>
+        <div>
+            <a class="navbar-brand fw-bold m-0 p-0 text-white" style="font-size: 1.15rem; letter-spacing: 0.5px;" href="">Mavis Belleza</a>
+            <div class="text-white-50 small" style="font-size: 0.72rem;">Especialidad en Cejas y Pestañas</div>
+        </div>
     </div>
 </div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
+<div class="nav-scrollable px-3 pt-3" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column gap-2">
+        <div class="nav-item">
+            <NavLink class="nav-link d-flex align-items-center" href="" Match="NavLinkMatch.All">
+                <i class="bi bi-house-heart fs-5 me-3"></i>
+                <span>Inicio</span>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="turnos">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Listado de Turnos
+        <div class="nav-item">
+            <NavLink class="nav-link d-flex align-items-center" href="turnos">
+                <i class="bi bi-card-checklist fs-5 me-3"></i>
+                <span>Listado de Turnos</span>
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="turnos/nuevo">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Nuevo Turno
+        <div class="nav-item">
+            <NavLink class="nav-link d-flex align-items-center" href="turnos/nuevo">
+                <i class="bi bi-plus-circle-dotted fs-5 me-3"></i>
+                <span>Nuevo Turno</span>
             </NavLink>
         </div>
     </nav>

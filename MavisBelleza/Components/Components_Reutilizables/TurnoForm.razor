@@ -2,44 +2,88 @@
 
 <EditForm Model="Turno" OnValidSubmit="ManejarSubmit">
     <DataAnnotationsValidator />
-    <ValidationSummary class="alert alert-danger mb-3" />
 
+    <!-- Nombre y Apellido -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small" style="color: #2f3e46;">Nombre</label>
+            <InputText @bind-Value="Turno.NombreCliente" class="form-control form-control-rounded" placeholder="Nombre" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small" style="color: #2f3e46;">Apellido</label>
+            <InputText @bind-Value="Turno.ApellidoCliente" class="form-control form-control-rounded" placeholder="Apellido" />
+        </div>
+    </div>
+
+    <!-- Selección de Servicio -->
     <div class="mb-3">
-        <label class="form-label">Cliente</label>
-        <InputSelect @bind-Value="Turno.ClienteId" class="form-select">
-            <option value="0">-- Seleccione un cliente --</option>
-            @foreach (var c in Clientes)
-            {
-                <option value="@c.Id">@c.Nombre</option>
-            }
+        <label class="form-label fw-semibold small" style="color: #2f3e46;">Tratamiento</label>
+        <InputSelect Value="Turno.Servicio"
+                     ValueExpression="() => Turno.Servicio"
+                     ValueChanged="@((string val) => SeleccionarServicio(val))"
+                     class="form-select form-control-rounded">
+            <option value="">-- Seleccionar tratamiento --</option>
+            <option value="Lifting de Pestañas">Lifting de Pestañas</option>
+            <option value="Laminado de Cejas">Laminado de Cejas</option>
+            <option value="Perfilado de Cejas">Perfilado de Cejas</option>
         </InputSelect>
-        <ValidationMessage For="() => Turno.ClienteId" class="text-danger small" />
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Servicio</label>
-        <InputSelect @bind-Value="Turno.Servicio" class="form-select">
-            <option value="">-- Seleccione servicio --</option>
-            <option value="Limpieza Facial">Limpieza Facial</option>
-            <option value="Manicura Rusa">Manicura Rusa</option>
-            <option value="Masaje Reductor">Masaje Reductor</option>
-        </InputSelect>
-        <ValidationMessage For="() => Turno.Servicio" class="text-danger small" />
+    <!-- Precio Dinámico -->
+    @if (Turno.Precio > 0)
+    {
+        <div class="p-3 mb-3 text-center rounded-4" style="background-color: #f4f6f0; border: 1px dashed #a3b18a;">
+            <span class="text-muted small d-block">Precio del servicio:</span>
+            <span class="fs-4 fw-bold" style="color: #3a5a40;">$@Turno.Precio.ToString("N0")</span>
+        </div>
+    }
+
+    <!-- Fecha y Hora -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small" style="color: #2f3e46;">Día</label>
+            <InputDate @bind-Value="Turno.Fecha" class="form-control form-control-rounded" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label fw-semibold small" style="color: #2f3e46;">Horario</label>
+            <input type="time"
+                   value="@HoraString"
+                   @onchange="ActualizarHora"
+                   class="form-control form-control-rounded" />
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label class="form-label">Fecha y Hora</label>
-        <InputDate Type="InputDateType.DateTimeLocal" @bind-Value="Turno.FechaHora" class="form-control" />
-        <ValidationMessage For="() => Turno.FechaHora" class="text-danger small" />
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Guardar Turno</button>
+    <!-- Botón Personalizado -->
+    <button type="submit" class="btn btn-spa w-100">
+        Confirmar Reserva
+    </button>
 </EditForm>
 
 @code {
     [Parameter, EditorRequired] public TurnosModels Turno { get; set; } = new();
-    [Parameter] public List<ClientesModels> Clientes { get; set; } = new();
     [Parameter] public EventCallback OnValidSubmit { get; set; }
+
+    private string HoraString => Turno.Hora.ToString(@"hh\:mm");
+
+    private void ActualizarHora(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out var nuevaHora))
+        {
+            Turno.Hora = nuevaHora;
+        }
+    }
+
+    private void SeleccionarServicio(string servicio)
+    {
+        Turno.Servicio = servicio;
+        Turno.Precio = servicio switch
+        {
+            "Lifting de Pestañas" => 18000,
+            "Laminado de Cejas" => 15000,
+            "Perfilado de Cejas" => 9000,
+            _ => 0
+        };
+    }
 
     private async Task ManejarSubmit() => await OnValidSubmit.InvokeAsync();
 }
