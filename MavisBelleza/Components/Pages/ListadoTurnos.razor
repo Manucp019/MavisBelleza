@@ -12,8 +12,10 @@
 
 <main class="container my-4">
     <header class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Gestión de Turnos</h1>
-        <span class="badge bg-primary fs-6">Total en sistema: @StateService.TotalTurnos</span>
+        <h1 class="fw-bold" style="color: #2f3e46;">Gestión de Turnos</h1>
+        <span class="badge rounded-pill px-3 py-2 fs-6" style="background-color: #a3b18a; color: #2f3e46;">
+            Total en sistema: @StateService.TotalTurnos
+        </span>
     </header>
 
     <div class="row mb-3">
@@ -26,9 +28,15 @@
     {
         <p>Cargando turnos...</p>
     }
+    else if (!turnosPaginados.Any())
+    {
+        <div class="alert alert-info rounded-4 text-center">
+            No se encontraron turnos agendados.
+        </div>
+    }
     else
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach (var turno in turnosPaginados)
             {
                 <div class="col-12 col-md-6 col-lg-4">
@@ -37,7 +45,9 @@
             }
         </div>
 
-        <Paginador PaginaActual="paginaActual" TotalPaginas="totalPaginas" OnPageChanged="CambiarPagina" />
+        <div class="mt-4">
+            <Paginador PaginaActual="paginaActual" TotalPaginas="totalPaginas" OnPageChanged="CambiarPagina" />
+        </div>
     }
 </main>
 
@@ -64,7 +74,7 @@
     private async Task CargarTurnos()
     {
         using var context = DbFactory.CreateDbContext();
-        todosLosTurnos = await context.Turnos.Include(t => t.Cliente).ToListAsync();
+        todosLosTurnos = await context.Turnos.ToListAsync();
         StateService.ActualizarTotal(todosLosTurnos.Count);
         AplicarFiltroYPaginar();
     }
@@ -80,7 +90,10 @@
     {
         turnosFiltrados = string.IsNullOrWhiteSpace(filtro)
             ? todosLosTurnos
-            : todosLosTurnos.Where(t => t.Servicio.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
+            : todosLosTurnos.Where(t =>
+                t.NombreCliente.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                t.ApellidoCliente.Contains(filtro, StringComparison.OrdinalIgnoreCase) ||
+                t.Servicio.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
 
         totalPaginas = (int)Math.Ceiling(turnosFiltrados.Count / (double)tamanoPagina);
         if (totalPaginas == 0) totalPaginas = 1;
@@ -115,9 +128,7 @@
                 context.Turnos.Remove(turno);
                 await context.SaveChangesAsync();
 
-                // JS Interop conectando con la función global declarada en App.razor
                 await JS.InvokeVoidAsync("mostrarAlerta", "El turno fue eliminado exitosamente.");
-
                 await CargarTurnos();
             }
         }
