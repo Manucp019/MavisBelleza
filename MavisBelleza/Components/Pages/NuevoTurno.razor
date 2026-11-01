@@ -1,27 +1,57 @@
 ﻿@page "/turnos/nuevo"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using MavisBelleza.Data
 @using MavisBelleza.Models
 @using MavisBelleza.Components.Components_Reutilizables
+@inject IDbContextFactory<AppDbContext> DbFactory
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
 <PageTitle>Nuevo Turno - Mavis Belleza</PageTitle>
 
 <main class="container my-5" style="max-width: 520px;">
-    <div class="card card-spa p-4 p-md-5">
+    <div class="card card-spa p-4 p-md-5 rounded-5 shadow-sm border-0">
         <div class="text-center mb-4">
-            <h2 class="fw-bold" style="color: #2f3e46;">Agendar Turno</h2>
-            <p class="text-muted small">Completa los datos de la clienta y el tratamiento</p>
+            <h2 class="fw-bold" style="color: #2f3e46;">Agendar Nuevo Turno</h2>
+            <p class="text-muted small">Ingresa tus datos, elige el tratamiento, día y hora disponible</p>
         </div>
 
-        <TurnoForm Turno="nuevoTurno" OnValidSubmit="GuardarTurno" />
+        <TurnoForm Turno="nuevoTurno" TurnosExistentes="turnosExistentes" OnValidSubmit="GuardarTurno" />
     </div>
 </main>
 
 @code {
-    private TurnosModels nuevoTurno = new();
+    private TurnosModels nuevoTurno = new TurnosModels { Fecha = DateTime.Today };
+    private List<TurnosModels> turnosExistentes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        turnosExistentes = await context.Turnos.ToListAsync();
+    }
 
     private async Task GuardarTurno()
     {
+        using var context = DbFactory.CreateDbContext();
+
+        bool existeTurnoMismaHora = await context.Turnos.AnyAsync(t =>
+            t.Fecha.Date == nuevoTurno.Fecha.Date && t.Horario == nuevoTurno.Horario);
+
+        if (existeTurnoMismaHora)
+        {
+            await JS.InvokeVoidAsync("mostrarAlerta", "El horario seleccionado ya no está disponible para ese día.");
+            return;
+        }
+
+        if (string.IsNullOrEmpty(nuevoTurno.Estado))
+        {
+            nuevoTurno.Estado = "Confirmado";
+        }
+
+        context.Turnos.Add(nuevoTurno);
+        await context.SaveChangesAsync();
+
         await JS.InvokeVoidAsync("mostrarAlerta", "¡Turno agendado con éxito!");
         Navigation.NavigateTo("/turnos");
     }

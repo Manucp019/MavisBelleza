@@ -3,11 +3,9 @@
 public class TurnoStateService
 {
     public event Action? OnChange;
-    public int TotalTurnos { get; private set; }
 
-    public void ActualizarTotal(int total)
+    public void NotifyStateChanged()
     {
-        TotalTurnos = total;
         OnChange?.Invoke();
     }
 }

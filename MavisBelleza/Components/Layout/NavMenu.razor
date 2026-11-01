@@ -1,37 +1,37 @@
-﻿<div class="top-row px-4 navbar navbar-dark d-flex flex-column align-items-start py-3" style="background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.15);">
-    <div class="container-fluid p-0 d-flex align-items-center">
-        <div class="p-2 rounded-circle me-2 d-flex align-items-center justify-content-center" style="background-color: #2d5a44; width: 38px; height: 38px;">
-            <i class="bi bi-sparkles text-white fs-5"></i>
-        </div>
-        <div>
-            <a class="navbar-brand fw-bold m-0 p-0 text-white" style="font-size: 1.15rem; letter-spacing: 0.5px;" href="">Mavis Belleza</a>
-            <div class="text-white-50 small" style="font-size: 0.72rem;">Especialidad en Cejas y Pestañas</div>
+﻿@inject NavigationManager Navigation
+
+<nav class="navbar navbar-expand-md shadow-sm py-2 px-4 top-navbar">
+    <div class="container d-flex justify-content-between align-items-center">
+        <!-- Logo y Marca -->
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold m-0" href="">
+            <img src="favicon.png" alt="Mavis Belleza Logo" class="nav-brand-logo rounded-circle shadow-sm" />
+            <span class="fs-4 text-white">Mavis Belleza</span>
+        </a>
+
+        <!-- Botón Menú Móvil -->
+        <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbar" aria-controls="topNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon nav-toggler-white"></span>
+        </button>
+
+        <!-- Navegación -->
+        <div class="collapse navbar-collapse justify-content-end mt-3 mt-md-0" id="topNavbar">
+            <ul class="navbar-nav d-flex gap-2">
+                <li class="nav-item">
+                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="" Match="NavLinkMatch.All">
+                        🏠 Inicio
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="turnos">
+                        📋 Listado de Turnos
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="turnos/nuevo">
+                        ✨ Nuevo Turno
+                    </NavLink>
+                </li>
+            </ul>
         </div>
     </div>
-</div>
-
-
-<div class="nav-scrollable px-3 pt-3" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column gap-2">
-        <div class="nav-item">
-            <NavLink class="nav-link d-flex align-items-center" href="" Match="NavLinkMatch.All">
-                <i class="bi bi-house-heart fs-5 me-3"></i>
-                <span>Inicio</span>
-            </NavLink>
-        </div>
-
-        <div class="nav-item">
-            <NavLink class="nav-link d-flex align-items-center" href="turnos">
-                <i class="bi bi-card-checklist fs-5 me-3"></i>
-                <span>Listado de Turnos</span>
-            </NavLink>
-        </div>
-
-        <div class="nav-item">
-            <NavLink class="nav-link d-flex align-items-center" href="turnos/nuevo">
-                <i class="bi bi-plus-circle-dotted fs-5 me-3"></i>
-                <span>Nuevo Turno</span>
-            </NavLink>
-        </div>
-    </nav>
-</div>
+</nav>

@@ -1,89 +1,104 @@
 ﻿@using MavisBelleza.Models
 
-<EditForm Model="Turno" OnValidSubmit="ManejarSubmit">
+<EditForm Model="Turno" OnValidSubmit="GuardarTurno">
     <DataAnnotationsValidator />
 
-    <!-- Nombre y Apellido -->
-    <div class="row g-3 mb-3">
-        <div class="col-md-6">
-            <label class="form-label fw-semibold small" style="color: #2f3e46;">Nombre</label>
-            <InputText @bind-Value="Turno.NombreCliente" class="form-control form-control-rounded" placeholder="Nombre" />
+    <div class="row g-3">
+        <!-- Nombre y Apellido -->
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Nombre</label>
+            <InputText @bind-Value="Turno.NombreCliente" class="form-control input-spa py-2" placeholder="Ej: Ana" />
+            <ValidationMessage For="@(() => Turno.NombreCliente)" class="text-danger small" />
         </div>
-        <div class="col-md-6">
-            <label class="form-label fw-semibold small" style="color: #2f3e46;">Apellido</label>
-            <InputText @bind-Value="Turno.ApellidoCliente" class="form-control form-control-rounded" placeholder="Apellido" />
+
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Apellido</label>
+            <InputText @bind-Value="Turno.ApellidoCliente" class="form-control input-spa py-2" placeholder="Ej: Gómez" />
+            <ValidationMessage For="@(() => Turno.ApellidoCliente)" class="text-danger small" />
+        </div>
+
+        <!-- Contacto -->
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Teléfono / WhatsApp</label>
+            <InputText @bind-Value="Turno.Telefono" class="form-control input-spa py-2" placeholder="11 1234 5678" />
+            <ValidationMessage For="@(() => Turno.Telefono)" class="text-danger small" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Email</label>
+            <InputText @bind-Value="Turno.Email" class="form-control input-spa py-2" placeholder="ejemplo@correo.com" />
+            <ValidationMessage For="@(() => Turno.Email)" class="text-danger small" />
+        </div>
+
+        <!-- Servicio y Método de Pago -->
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Servicio</label>
+            <InputSelect @bind-Value="Turno.Servicio" class="form-select select-spa py-2" @onchange="OnServicioChanged">
+                <option value="">Seleccione un servicio...</option>
+                <option value="Lifting de Pestañas">Lifting de Pestañas ($30.000)</option>
+                <option value="Laminado de Cejas">Laminado de Cejas ($30.000)</option>
+                <option value="Perfilado de Cejas">Perfilado de Cejas ($15.000)</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => Turno.Servicio)" class="text-danger small" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Método de Pago</label>
+            <InputSelect @bind-Value="Turno.MetodoPago" class="form-select select-spa py-2">
+                <option value="">Seleccione medio de pago...</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Transferencia">Transferencia</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => Turno.MetodoPago)" class="text-danger small" />
+        </div>
+
+        <!-- Fecha y Horario -->
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Fecha del Turno</label>
+            <InputDate @bind-Value="Turno.Fecha" class="form-control input-spa py-2" />
+            <ValidationMessage For="@(() => Turno.Fecha)" class="text-danger small" />
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label class="form-label fw-semibold title-marca">Horario Disponible</label>
+            <InputText @bind-Value="Turno.Horario" class="form-control input-spa py-2" placeholder="Ej: 14:00" />
+            <ValidationMessage For="@(() => Turno.Horario)" class="text-danger small" />
         </div>
     </div>
 
-    <!-- Selección de Servicio -->
-    <div class="mb-3">
-        <label class="form-label fw-semibold small" style="color: #2f3e46;">Tratamiento</label>
-        <InputSelect Value="Turno.Servicio"
-                     ValueExpression="() => Turno.Servicio"
-                     ValueChanged="@((string val) => SeleccionarServicio(val))"
-                     class="form-select form-control-rounded">
-            <option value="">-- Seleccionar tratamiento --</option>
-            <option value="Lifting de Pestañas">Lifting de Pestañas</option>
-            <option value="Laminado de Cejas">Laminado de Cejas</option>
-            <option value="Perfilado de Cejas">Perfilado de Cejas</option>
-        </InputSelect>
+    <!-- Botón de Confirmación Verde -->
+    <div class="mt-4 text-center">
+        <button type="submit" class="btn btn-spa px-5 py-3 shadow-sm w-100 fs-6">
+            Confirmar Reserva ✨
+        </button>
     </div>
-
-    <!-- Precio Dinámico -->
-    @if (Turno.Precio > 0)
-    {
-        <div class="p-3 mb-3 text-center rounded-4" style="background-color: #f4f6f0; border: 1px dashed #a3b18a;">
-            <span class="text-muted small d-block">Precio del servicio:</span>
-            <span class="fs-4 fw-bold" style="color: #3a5a40;">$@Turno.Precio.ToString("N0")</span>
-        </div>
-    }
-
-    <!-- Fecha y Hora -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-6">
-            <label class="form-label fw-semibold small" style="color: #2f3e46;">Día</label>
-            <InputDate @bind-Value="Turno.Fecha" class="form-control form-control-rounded" />
-        </div>
-        <div class="col-md-6">
-            <label class="form-label fw-semibold small" style="color: #2f3e46;">Horario</label>
-            <input type="time"
-                   value="@HoraString"
-                   @onchange="ActualizarHora"
-                   class="form-control form-control-rounded" />
-        </div>
-    </div>
-
-    <!-- Botón Personalizado -->
-    <button type="submit" class="btn btn-spa w-100">
-        Confirmar Reserva
-    </button>
 </EditForm>
 
 @code {
-    [Parameter, EditorRequired] public TurnosModels Turno { get; set; } = new();
-    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter, EditorRequired]
+    public TurnosModels Turno { get; set; } = new();
 
-    private string HoraString => Turno.Hora.ToString(@"hh\:mm");
+    [Parameter]
+    public List<TurnosModels> TurnosExistentes { get; set; } = new();
 
-    private void ActualizarHora(ChangeEventArgs e)
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    private void OnServicioChanged(ChangeEventArgs e)
     {
-        if (TimeSpan.TryParse(e.Value?.ToString(), out var nuevaHora))
+        var servicio = e.Value?.ToString();
+        if (servicio == "Lifting de Pestañas" || servicio == "Laminado de Cejas")
         {
-            Turno.Hora = nuevaHora;
+            Turno.Precio = 30000;
+        }
+        else if (servicio == "Perfilado de Cejas")
+        {
+            Turno.Precio = 15000;
         }
     }
 
-    private void SeleccionarServicio(string servicio)
+    private async Task GuardarTurno()
     {
-        Turno.Servicio = servicio;
-        Turno.Precio = servicio switch
-        {
-            "Lifting de Pestañas" => 18000,
-            "Laminado de Cejas" => 15000,
-            "Perfilado de Cejas" => 9000,
-            _ => 0
-        };
+        await OnValidSubmit.InvokeAsync();
     }
-
-    private async Task ManejarSubmit() => await OnValidSubmit.InvokeAsync();
 }

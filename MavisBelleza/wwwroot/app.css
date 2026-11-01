@@ -1,56 +1,122 @@
+/* ==========================================
+   PALETA OFICIAL DE COLORES - MAVIS BELLEZA
+   ========================================== */
 :root {
-    --verde-principal: #3a5a40;
-    --verde-hover: #344e41;
-    --verde-suave: #a3b18a;
-    --verde-fondo: #f4f6f0;
+    --verde-agua-fondo: #dbeec8; /* Verde acuarela claro del logo */
+    --verde-menta-suave: #c2e59c; /* Verde menta suave para activos/badges */
+    --verde-hoja: #2e8b57; /* Verde esmeralda de las hojas del logo */
+    --negro-marca: #111111; /* Negro para títulos y bordes */
+    --dorado-acento: #e6c260; /* Dorado suave del logo */
+    --fondo-pantalla: #f6faef; /* Fondo de página fresco y luminoso */
     --blanco-card: #ffffff;
-    --texto-dark: #2f3e46;
+    --navbar-oscuro: #2f3e46; /* Fondo verde oscuro del Top Navbar */
 }
 
+/* ==========================================
+   ESTILOS GENERALES Y PÁGINA
+   ========================================== */
 body {
-    background-color: var(--verde-fondo) !important;
-    color: var(--texto-dark) !important;
+    background-color: var(--fondo-pantalla) !important;
+    color: var(--negro-marca) !important;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Campos de texto súper redondeados */
-.form-control-rounded, .form-select.form-control-rounded {
-    border-radius: 25px !important;
-    padding: 0.65rem 1.25rem !important;
-    border: 1px solid #dad7cd !important;
-    background-color: #ffffff !important;
-    color: var(--texto-dark) !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+/* ==========================================
+   BARRA DE NAVEGACIÓN SUPERIOR (TOP NAVBAR)
+   ========================================== */
+.top-navbar {
+    background-color: var(--navbar-oscuro) !important;
 }
 
-    .form-control-rounded:focus {
-        border-color: var(--verde-suave) !important;
-        box-shadow: 0 0 0 3px rgba(163, 177, 138, 0.25) !important;
-        outline: none;
-    }
+.nav-brand-logo {
+    width: 42px !important;
+    height: 42px !important;
+    object-fit: contain !important;
+    background-color: var(--blanco-card) !important;
+    padding: 0.25rem !important;
+}
 
-/* Botón principal verde spa */
-.btn-spa {
-    background-color: var(--verde-principal) !important;
-    color: #ffffff !important;
-    border-radius: 25px !important;
-    padding: 0.75rem 1.5rem !important;
-    font-weight: 600 !important;
-    border: none !important;
-    box-shadow: 0 4px 12px rgba(58, 90, 64, 0.2) !important;
+.nav-toggler-white {
+    filter: invert(1) !important;
+}
+
+/* Botones de navegación con forma de píldora redondeada */
+.nav-link-custom {
+    color: rgba(255, 255, 255, 0.9) !important;
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    border-radius: 50rem !important;
+    font-weight: 500 !important;
+    text-align: center !important;
     transition: all 0.25s ease !important;
 }
 
-    .btn-spa:hover {
-        background-color: var(--verde-hover) !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(58, 90, 64, 0.3) !important;
+    .nav-link-custom:hover {
+        color: #ffffff !important;
+        background-color: rgba(255, 255, 255, 0.25) !important;
+        transform: translateY(-1px) !important;
     }
 
-/* Card del formulario */
+    .nav-link-custom.active {
+        background-color: var(--verde-menta-suave) !important;
+        color: var(--negro-marca) !important;
+        border-color: var(--verde-menta-suave) !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+
+/* ==========================================
+   TARJETAS SPA, BOTONES E INPUTS REDONDEADOS
+   ========================================== */
 .card-spa {
-    background: #ffffff !important;
-    border-radius: 20px !important;
+    background-color: var(--blanco-card) !important;
+    border-radius: 28px !important;
+    box-shadow: 0 10px 25px rgba(46, 139, 87, 0.08) !important;
+    border: 1px solid #e1eed1 !important;
+}
+
+/* BOTÓN CONFIRMAR RESERVA (VERDE RELLENO Y REDONDEADO) */
+.btn-spa {
+    background-color: var(--verde-hoja) !important;
+    color: #ffffff !important;
+    border-radius: 50rem !important;
+    font-weight: 600 !important;
     border: none !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+    .btn-spa:hover {
+        background-color: #246d44 !important;
+        color: #ffffff !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 6px 15px rgba(46, 139, 87, 0.25) !important;
+    }
+
+/* INPUTS Y DESPLEGABLES REDONDEADOS (PÍLDORA) */
+.input-spa {
+    border-radius: 50rem !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    border: 1px solid #ced4da !important;
+}
+
+    .input-spa:focus {
+        border-color: var(--verde-hoja) !important;
+        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.15) !important;
+    }
+
+.select-spa {
+    border-radius: 50rem !important;
+    padding-left: 1.25rem !important;
+    padding-right: 2.5rem !important;
+    border: 1px solid #ced4da !important;
+}
+
+    .select-spa:focus {
+        border-color: var(--verde-hoja) !important;
+        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.15) !important;
+    }
+
+.title-marca {
+    color: var(--negro-marca) !important;
 }

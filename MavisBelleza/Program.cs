@@ -1,32 +1,36 @@
-using Microsoft.EntityFrameworkCore; // <-- Agrega esta línea arriba de todo
+using Microsoft.EntityFrameworkCore;
 using MavisBelleza.Components;
 using MavisBelleza.Data;
 using MavisBelleza.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configurar servicios de Razor Components
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// UNIDAD 3: Registrar DbContextFactory con SQLite
+// Registrar DbContextFactory con SQLite
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlite("Data Source=mavisbelleza.db"));
 
-// UNIDAD 1: Registrar State Service para notificación reactiva
+// Registrar State Service para notificaciones reactivas
 builder.Services.AddSingleton<TurnoStateService>();
 
 var app = builder.Build();
 
-// Crear la base de datos automáticamente si no existe al iniciar
+// CREAR LA BASE DE DATOS SI NO EXISTE (SIN BORRAR LA EXISTENTE)
 using (var scope = app.Services.CreateScope())
 {
     var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
     using var db = dbFactory.CreateDbContext();
+
+    // Comenta o elimina EnsureDeleted():
+    // db.Database.EnsureDeleted(); 
+
+    // Mantiene la base de datos y sus turnos guardados intactos:
     db.Database.EnsureCreated();
 }
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -34,7 +38,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
 app.UseAntiforgery();
 

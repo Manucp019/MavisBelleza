@@ -1,47 +1,143 @@
 ﻿@page "/"
-@using MavisBelleza.Services
-@inject TurnoStateService StateService
-@implements IDisposable
+@inject NavigationManager Navigation
 
-<PageTitle>Mavis Belleza - Inicio</PageTitle>
+<PageTitle>Mavis Belleza - Especialidad en Cejas y Pestañas</PageTitle>
 
-<main class="container my-4">
-    <!-- Banner de Bienvenida -->
-    <section class="p-5 mb-4 rounded-3 text-white shadow-sm" style="background: linear-gradient(135deg, #2d5a27, #87a96b);">
-        <div class="container-fluid py-3">
-            <h1 class="display-5 fw-bold">Bienvenida a Mavis Belleza ✨</h1>
-            <p class="col-md-8 fs-5">Especialistas en Lifting de Pestañas, Laminado y Perfilado de Cejas. Reserva y gestiona tus turnos de forma rápida y sencilla.</p>
-            <a href="turnos/nuevo" class="btn btn-light btn-lg font-weight-bold text-success mt-2">Agendar Cita</a>
+<!-- HERO SECTION CON LOGO / MARCA -->
+<section class="text-center py-5 px-3 rounded-5 mb-5 shadow-sm hero-banner">
+    <div class="container py-2">
+        <div class="mb-3 d-inline-block p-2 rounded-circle shadow-sm bg-white">
+            <img src="favicon.png" alt="Mavis Belleza Logo" class="hero-logo-container" />
         </div>
-    </section>
 
-    <!-- Estado del Sistema y Resumen -->
+        <h1 class="display-4 fw-bold mb-2 title-marca">Mavis Belleza</h1>
+        <p class="lead text-muted mb-0 fs-5">Especialidad en Cejas y Pestañas — Resalta tu mirada de forma natural</p>
+    </div>
+</section>
+
+<!-- SECCIÓN DE SERVICIOS -->
+<section class="container mb-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold fs-2 title-marca">Nuestros Tratamientos</h2>
+        <p class="text-muted">Servicios personalizados con productos de primera calidad para cuidar tu piel y mirada</p>
+    </div>
+
     <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 h-100 p-3" style="border-top: 5px solid #2d5a27 !important; border-radius: 12px;">
-                <div class="card-body text-center">
-                    <h5 class="text-muted fw-normal">Turnos Agendados</h5>
-                    <p class="display-4 fw-bold text-success my-2">@StateService.TotalTurnos</p>
-                    <a href="turnos" class="btn btn-outline-success btn-sm mt-2">Ver Listado Completo</a>
+        <!-- Servicio 1: Lifting de Pestañas -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-servicio">
+                <img src="https://images.unsplash.com/photo-1583001809873-a1284a5da527?auto=format&fit=crop&w=600&q=80"
+                     class="card-img-top card-servicio-img"
+                     alt="Lifting de Pestañas" />
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-servicio">⏱️ 1h 30m</span>
+                        <span class="fs-5 fw-bold price-text">$30.000</span>
+                    </div>
+                    <h4 class="card-title fw-bold title-marca">Lifting de Pestañas</h4>
+                    <p class="card-text text-muted small flex-grow-1">
+                        Tratamiento que arquea y da curvatura natural a tus pestañas desde la raíz. Incluye nutrición profunda con botox/keratina para fortalecer el pelo y tinte para dar un efecto de rímel natural.
+                    </p>
+                    <a href="/turnos/nuevo" class="btn btn-spa w-100 mt-3">
+                        Reservar Lifting
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 h-100 p-3" style="border-radius: 12px;">
-                <div class="card-body">
-                    <h5 class="card-title fw-bold text-success mb-3">Nuestros Servicios Destacados</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Lifting de Pestañas:</strong> Curvatura natural y nutrición para tus pestañas.</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Laminado de Cejas:</strong> Fijación, volumen y diseño orgánico.</li>
-                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Perfilado de Cejas:</strong> Visagismo y depilación precisa según tu rostro.</li>
-                    </ul>
+
+        <!-- Servicio 2: Laminado de Cejas -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-servicio">
+                <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80"
+                     class="card-img-top card-servicio-img"
+                     alt="Laminado de Cejas" />
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-servicio">⏱️ 1 hora</span>
+                        <span class="fs-5 fw-bold price-text">$30.000</span>
+                    </div>
+                    <h4 class="card-title fw-bold title-marca">Laminado de Cejas</h4>
+                    <p class="card-text text-muted small flex-grow-1">
+                        Diseñado para peinar, fijar y alinear los vellos rebeldes o desordenados de las cejas, dando una sensación de mayor volumen y definición. Incluye perfilado e hidratación.
+                    </p>
+                    <a href="/turnos/nuevo" class="btn btn-spa w-100 mt-3">
+                        Reservar Laminado
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Servicio 3: Perfilado de Cejas -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden card-servicio">
+                <img src="https://images.unsplash.com/photo-1620331311520-246422fd82f9?auto=format&fit=crop&w=600&q=80"
+                     class="card-img-top card-servicio-img"
+                     alt="Perfilado de Cejas" />
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="badge badge-servicio">⏱️ 30 min</span>
+                        <span class="fs-5 fw-bold price-text">$15.000</span>
+                    </div>
+                    <h4 class="card-title fw-bold title-marca">Perfilado de Cejas</h4>
+                    <p class="card-text text-muted small flex-grow-1">
+                        Diseño de cejas personalizado según la morfología de tu rostro (visagismo). Remoción precisa del exceso de vello mediante pinza o cera suave para un acabado perfecto.
+                    </p>
+                    <a href="/turnos/nuevo" class="btn btn-spa w-100 mt-3">
+                        Reservar Perfilado
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-</main>
+</section>
 
-@code {
-    protected override void OnInitialized() => StateService.OnChange += StateHasChanged;
-    public void Dispose() => StateService.OnChange -= StateHasChanged;
-}
+<!-- UBICACIÓN, HORARIOS & MAPA -->
+<section class="container my-5 py-4">
+    <div class="row g-4 align-items-center card-spa p-4 p-md-5">
+        <div class="col-12 col-lg-5">
+            <h3 class="fw-bold mb-4 title-marca">Visítanos en nuestro Studio</h3>
+
+            <div class="d-flex align-items-start mb-3">
+                <div class="fs-4 me-3">📍</div>
+                <div>
+                    <h6 class="fw-bold mb-1 title-marca">Dirección</h6>
+                    <p class="text-muted mb-0">Av. Libertador 1234, Piso 2, Dpto A, San Vicente, Buenos Aires</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-start mb-3">
+                <div class="fs-4 me-3">🕒</div>
+                <div>
+                    <h6 class="fw-bold mb-1 title-marca">Horarios de Atención</h6>
+                    <p class="text-muted mb-0">Lunes a Sábados: 09:00 hs - 18:30 hs</p>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-start mb-4">
+                <div class="fs-4 me-3">📲</div>
+                <div>
+                    <h6 class="fw-bold mb-1 title-marca">Consultas y Turnos</h6>
+                    <p class="text-muted mb-0">+54 9 11 1234-5678</p>
+                </div>
+            </div>
+
+            <a href="https://wa.me/5491112345678?text=Hola!%20Quisiera%20hacer%20una%20consulta"
+               target="_blank"
+               class="btn btn-success w-100 py-3 rounded-pill fw-bold d-flex justify-content-center align-items-center gap-2 shadow-sm">
+                Enviar Mensaje por WhatsApp
+            </a>
+        </div>
+
+        <div class="col-12 col-lg-7">
+            <div class="rounded-4 overflow-hidden shadow-sm map-container">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3271.49382218841!2d-58.42315!3d-34.96918!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95bcd332a67e15bf%3A0x62a26fa32bc97d91!2sSan%20Vicente%2C%20Provincia%20de%20Buenos%20Aires!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar"
+                        width="100%"
+                        height="100%"
+                        style="border:0;"
+                        allowfullscreen=""
+                        loading="lazy">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</section>

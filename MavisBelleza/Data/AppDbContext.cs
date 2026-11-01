@@ -1,7 +1,5 @@
-﻿using MavisBelleza.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Reflection.Emit;
+﻿using Microsoft.EntityFrameworkCore;
+using MavisBelleza.Models;
 
 namespace MavisBelleza.Data;
 
@@ -9,20 +7,11 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    // Tipos adaptados a tus clases ClientesModels y TurnosModels
-    public DbSet<ClientesModels> Clientes => Set<ClientesModels>();
-    public DbSet<TurnosModels> Turnos => Set<TurnosModels>();
+    public DbSet<TurnosModels> Turnos { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        modelBuilder.Entity<ClientesModels>().HasData(
-            new ClientesModels { Id = 1, Nombre = "Laura Gómez", Email = "laura@example.com" }
-        );
-
-        modelBuilder.Entity<TurnosModels>().HasData(
-            new TurnosModels { Id = 1, FechaHora = DateTime.Now.AddDays(1), Servicio = "Limpieza Facial", ClienteId = 1, Confirmado = true }
-        );
+        // Sin datos iniciales (Seed Data). La base de datos iniciará vacía.
     }
 }
