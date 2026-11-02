@@ -1,20 +1,23 @@
-﻿@inject NavigationManager Navigation
+﻿@implements IDisposable
+@inject TurnoStateService TurnoState
+@inject NavigationManager Navigation
 
-<nav class="navbar navbar-expand-md shadow-sm py-2 px-4 top-navbar">
+<nav class="navbar navbar-expand-md shadow-sm py-2 px-3 px-md-4 top-navbar" aria-label="Navegación principal">
     <div class="container d-flex justify-content-between align-items-center">
-        <!-- Logo y Marca -->
+        <!-- Logo y marca -->
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold m-0" href="">
-            <img src="favicon.png" alt="Mavis Belleza Logo" class="nav-brand-logo rounded-circle shadow-sm" />
-            <span class="fs-4 text-white">Mavis Belleza</span>
+            <img src="img/logo.png" alt="Logo de Mavis Belleza" class="nav-brand-logo" />
+            <span class="nav-marca-texto text-white">Mavis Belleza</span>
         </a>
 
-        <!-- Botón Menú Móvil -->
-        <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#topNavbar" aria-controls="topNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <!-- Botón menú móvil: se maneja con estado de Blazor (no necesita bootstrap.js) -->
+        <button class="navbar-toggler border-0" type="button"
+                aria-controls="topNavbar" aria-expanded="@(menuAbierto ? "true" : "false")"
+                aria-label="Abrir o cerrar el menú" @onclick="AlternarMenu">
             <span class="navbar-toggler-icon nav-toggler-white"></span>
         </button>
 
-        <!-- Navegación -->
-        <div class="collapse navbar-collapse justify-content-end mt-3 mt-md-0" id="topNavbar">
+        <div class="collapse navbar-collapse justify-content-end mt-3 mt-md-0 @(menuAbierto ? "show" : "")" id="topNavbar">
             <ul class="navbar-nav d-flex gap-2">
                 <li class="nav-item">
                     <NavLink class="nav-link nav-link-custom px-4 py-2" href="" Match="NavLinkMatch.All">
@@ -22,8 +25,17 @@
                     </NavLink>
                 </li>
                 <li class="nav-item">
-                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="turnos">
-                        📋 Listado de Turnos
+                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="turnos" Match="NavLinkMatch.All">
+                        📋 Turnos
+                        @if (TurnoState.TurnosHoy > 0)
+                        {
+                            <span class="contador-hoy" title="Turnos para hoy">@TurnoState.TurnosHoy hoy</span>
+                        }
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link nav-link-custom px-4 py-2" href="clientes">
+                        👥 Clientes
                     </NavLink>
                 </li>
                 <li class="nav-item">
@@ -35,3 +47,34 @@
         </div>
     </div>
 </nav>
+
+@code {
+    private bool menuAbierto;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Suscripción al State Service: cuando cambian los turnos, se actualiza el contador.
+        TurnoState.OnChange += AlCambiarTurnos;
+        Navigation.LocationChanged += AlNavegar;
+        await TurnoState.AsegurarCargadoAsync();
+    }
+
+    private void AlternarMenu() => menuAbierto = !menuAbierto;
+
+    // El evento puede venir desde el circuito de OTRO usuario, por eso InvokeAsync.
+    private void AlCambiarTurnos() => InvokeAsync(StateHasChanged);
+
+    // En celular, al tocar un link se cierra el menú.
+    private void AlNavegar(object? sender, LocationChangedEventArgs e)
+    {
+        if (!menuAbierto) return;
+        menuAbierto = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        TurnoState.OnChange -= AlCambiarTurnos;
+        Navigation.LocationChanged -= AlNavegar;
+    }
+}

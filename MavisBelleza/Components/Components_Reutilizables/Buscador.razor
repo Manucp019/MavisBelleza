@@ -1,11 +1,76 @@
-﻿<div class="input-group search-box mb-3">
-    <input type="text" class="form-control" placeholder="Buscar por servicio..."
-           @bind="TextoBusqueda" @bind:event="oninput" @keyup="NotificarCambio" />
+﻿@implements IDisposable
+
+@* Buscador reutilizable con "debounce": espera a que el usuario deje de escribir
+   antes de avisar al componente padre, para no consultar la base en cada tecla. *@
+<div class="buscador" role="search">
+    <label for="@InputId" class="visually-hidden">@Placeholder</label>
+    <span class="buscador-icono" aria-hidden="true">🔍</span>
+    <input id="@InputId" type="search" class="form-control buscador-input"
+           placeholder="@Placeholder" value="@texto" @oninput="AlEscribir" autocomplete="off" />
+    @if (!string.IsNullOrEmpty(texto))
+    {
+        <button type="button" class="buscador-limpiar" aria-label="Limpiar búsqueda" @onclick="Limpiar">✕</button>
+    }
 </div>
 
 @code {
-    private string TextoBusqueda { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> OnSearchChanged { get; set; }
+    /// <summary>Texto de búsqueda (admite @bind-Valor).</summary>
+    [Parameter] public string? Valor { get; set; }
+    [Parameter] public EventCallback<string?> ValorChanged { get; set; }
 
-    private async Task NotificarCambio() => await OnSearchChanged.InvokeAsync(TextoBusqueda);
+    [Parameter] public string Placeholder { get; set; } = "Buscar...";
+    [Parameter] public int DemoraMs { get; set; } = 350;
+    [Parameter] public string InputId { get; set; } = $"buscador-{Guid.NewGuid():N}";
+
+    private string? texto;
+    private string? ultimoValorRecibido;
+    private CancellationTokenSource? cts;
+
+    protected override void OnParametersSet()
+    {
+        // Solo pisamos lo que escribe el usuario si el valor cambió desde afuera (ej: URL)
+        if (Valor != ultimoValorRecibido)
+        {
+            texto = Valor;
+            ultimoValorRecibido = Valor;
+        }
+    }
+
+    private async Task AlEscribir(ChangeEventArgs e)
+    {
+        texto = e.Value?.ToString();
+
+        cts?.Cancel();
+        cts = new CancellationTokenSource();
+        var token = cts.Token;
+
+        try
+        {
+            await Task.Delay(DemoraMs, token);
+            await Notificar();
+        }
+        catch (TaskCanceledException)
+        {
+            // El usuario siguió escribiendo: se descarta esta búsqueda
+        }
+    }
+
+    private async Task Limpiar()
+    {
+        cts?.Cancel();
+        texto = string.Empty;
+        await Notificar();
+    }
+
+    private async Task Notificar()
+    {
+        ultimoValorRecibido = texto;
+        await ValorChanged.InvokeAsync(texto);
+    }
+
+    public void Dispose()
+    {
+        cts?.Cancel();
+        cts?.Dispose();
+    }
 }

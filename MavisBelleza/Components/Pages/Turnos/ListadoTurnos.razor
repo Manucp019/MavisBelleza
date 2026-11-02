@@ -1,0 +1,222 @@
+﻿@page "/turnos"
+@implements IDisposable
+@inject TurnoService TurnoService
+@inject TurnoStateService TurnoState
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject JsInteropService Js
+
+<PageTitle>Turnos - Mavis Belleza</PageTitle>
+
+<section class="container py-2">
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold title-marca fs-2 m-0">Gestión de Turnos</h1>
+            <p class="text-muted small m-0">Consultá, filtrá y administrá las reservas del studio</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary rounded-pill px-3" @onclick="ExportarCsv" disabled="@exportando">
+                @(exportando ? "Exportando..." : "⬇ Exportar CSV")
+            </button>
+            <a href="turnos/nuevo" class="btn btn-spa px-4">+ Nuevo Turno</a>
+        </div>
+    </header>
+
+    <!-- Indicadores: se actualizan solos gracias al State Service -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <StatCard Titulo="Turnos hoy" Valor="@TurnoState.TurnosHoy.ToString()" Icono="📅" />
+        </div>
+        <div class="col-6 col-lg-3">
+            <StatCard Titulo="Próximos" Valor="@TurnoState.TurnosProximos.ToString()" Icono="🗓️" />
+        </div>
+        <div class="col-6 col-lg-3">
+            <StatCard Titulo="Pendientes de confirmar" Valor="@TurnoState.TurnosPendientes.ToString()" Icono="⏳" Variante="dorado"
+                      Href="turnos?estado=Pendiente" />
+        </div>
+        <div class="col-6 col-lg-3">
+            <StatCard Titulo="Resultados del filtro" Valor="@(resultado?.TotalItems.ToString() ?? "–")" Icono="🔎" Variante="oscuro" />
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="row g-2 mb-4 align-items-center">
+        <div class="col-12 col-md-8">
+            <Buscador Valor="@Q" ValorChanged="BuscarTexto" Placeholder="Buscar por cliente, email, teléfono o servicio..." />
+        </div>
+        <div class="col-12 col-md-4">
+            <label for="filtro-estado" class="visually-hidden">Filtrar por estado</label>
+            <select id="filtro-estado" class="form-select select-spa py-2" value="@Estado" @onchange="FiltrarEstado">
+                <option value="">Todos los estados</option>
+                @foreach (var e in EstadosTurno.Todos)
+                {
+                    <option value="@e">@e</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    @if (resultado is null)
+    {
+        <div class="text-center py-5" role="status">
+            <div class="spinner-border text-success"></div>
+            <p class="text-muted mt-2">Cargando turnos...</p>
+        </div>
+    }
+    else if (resultado.TotalItems == 0)
+    {
+        <div class="card card-spa text-center py-5 px-4">
+            @if (HayFiltros)
+            {
+                <h2 class="fw-bold title-marca fs-4">No encontramos turnos con esos filtros</h2>
+                <p class="text-muted">Probá con otra búsqueda o limpiá los filtros.</p>
+                <div><button class="btn btn-outline-secondary rounded-pill px-4" @onclick="LimpiarFiltros">Limpiar filtros</button></div>
+            }
+            else
+            {
+                <h2 class="fw-bold title-marca fs-4">No hay turnos agendados por el momento</h2>
+                <p class="text-muted">Hacé clic en "Nuevo Turno" para cargar el primero.</p>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var turno in resultado.Items)
+            {
+                <div class="col-12 col-md-6 col-xl-4" @key="turno.Id">
+                    <TurnoCard Turno="turno" OnEliminar="PedirEliminar" OnCambiarEstado="CambiarEstado" />
+                </div>
+            }
+        </div>
+
+        <Paginador PaginaActual="resultado.Pagina" TotalPaginas="resultado.TotalPaginas"
+                   TotalItems="resultado.TotalItems" Desde="resultado.Desde" Hasta="resultado.Hasta"
+                   OnPageChanged="IrAPagina" />
+    }
+</section>
+
+<ModalConfirm Mostrar="turnoAEliminar is not null"
+              Titulo="Eliminar turno"
+              TextoConfirmar="Sí, eliminar"
+              OnResponse="ConfirmarEliminar">
+    @if (turnoAEliminar is not null)
+    {
+        <p class="mb-1">¿Eliminar definitivamente el turno de <strong>@turnoAEliminar.Cliente?.NombreCompleto</strong>?</p>
+        <p class="text-muted small mb-0">@turnoAEliminar.Servicio?.Nombre — @turnoAEliminar.Fecha.ToString("dd/MM/yyyy") @turnoAEliminar.Horario hs</p>
+        <p class="text-muted small mt-2 mb-0">Si solo querés liberar el horario, usá "Cancelar" en la tarjeta.</p>
+    }
+</ModalConfirm>
+
+@code {
+    // ----- Parámetros que vienen de la URL (ej: /turnos?q=ana&estado=Pendiente&pagina=2) -----
+    [SupplyParameterFromQuery(Name = "q")] public string? Q { get; set; }
+    [SupplyParameterFromQuery(Name = "estado")] public string? Estado { get; set; }
+    [SupplyParameterFromQuery(Name = "pagina")] public int? Pagina { get; set; }
+
+    private const int TamanioPagina = 6;
+
+    private PagedResult<Turno>? resultado;
+    private Turno? turnoAEliminar;
+    private bool exportando;
+
+    private bool HayFiltros => !string.IsNullOrWhiteSpace(Q) || !string.IsNullOrWhiteSpace(Estado);
+    private FiltroTurnos FiltroActual => new(Q, Estado, Pagina ?? 1, TamanioPagina);
+
+    protected override async Task OnInitializedAsync()
+    {
+        TurnoState.OnChange += AlCambiarTurnos;
+        await TurnoState.AsegurarCargadoAsync();
+    }
+
+    // Se ejecuta cada vez que cambian los parámetros de la URL
+    protected override async Task OnParametersSetAsync() => await Cargar();
+
+    private async Task Cargar() => resultado = await TurnoService.BuscarAsync(FiltroActual);
+
+    // ----- Navegación programática: los filtros se reflejan en la URL (se pueden compartir / volver atrás) -----
+    private void NavegarCon(string? q, string? estado, int pagina)
+    {
+        var url = Navigation.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["q"] = string.IsNullOrWhiteSpace(q) ? null : q,
+            ["estado"] = string.IsNullOrWhiteSpace(estado) ? null : estado,
+            ["pagina"] = pagina > 1 ? pagina : null
+        });
+        Navigation.NavigateTo(url);
+    }
+
+    private void BuscarTexto(string? texto) => NavegarCon(texto, Estado, 1);
+
+    private void FiltrarEstado(ChangeEventArgs e) => NavegarCon(Q, e.Value?.ToString(), 1);
+
+    private void LimpiarFiltros() => NavegarCon(null, null, 1);
+
+    private async Task IrAPagina(int pagina)
+    {
+        NavegarCon(Q, Estado, pagina);
+        await Js.ScrollArribaAsync();
+    }
+
+    // ----- Acciones sobre turnos -----
+    private void PedirEliminar(Turno turno) => turnoAEliminar = turno;
+
+    private async Task ConfirmarEliminar(bool confirmado)
+    {
+        if (confirmado && turnoAEliminar is not null)
+        {
+            await TurnoService.EliminarAsync(turnoAEliminar.Id);
+            Toast.Exito("Turno eliminado.");
+            // La lista se recarga sola: EliminarAsync notifica al State Service
+        }
+        turnoAEliminar = null;
+    }
+
+    private async Task CambiarEstado(CambioEstadoTurno cambio)
+    {
+        await TurnoService.CambiarEstadoAsync(cambio.Turno.Id, cambio.NuevoEstado);
+        Toast.Exito($"Turno de {cambio.Turno.Cliente?.Nombre} marcado como {cambio.NuevoEstado}.");
+    }
+
+    // ----- JS Interop: exportar a CSV y descargar desde el navegador -----
+    private async Task ExportarCsv()
+    {
+        exportando = true;
+        try
+        {
+            var turnos = await TurnoService.ListarParaExportarAsync(FiltroActual);
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("Fecha;Horario;Cliente;Email;Teléfono;Servicio;Precio;Pago;Estado");
+            foreach (var t in turnos)
+            {
+                csv.AppendLine(string.Join(";",
+                    t.Fecha.ToString("dd/MM/yyyy"), t.Horario,
+                    Csv(t.Cliente?.NombreCompleto), Csv(t.Cliente?.Email), Csv(t.Cliente?.Telefono),
+                    Csv(t.Servicio?.Nombre), t.Precio.ToString("0"), Csv(t.MetodoPago), t.Estado));
+            }
+
+            await Js.DescargarArchivoAsync($"turnos-mavis-{DateTime.Now:yyyyMMdd-HHmm}.csv", csv.ToString());
+            Toast.Exito($"Se exportaron {turnos.Count} turnos.");
+        }
+        catch (Exception ex)
+        {
+            Toast.Error($"No se pudo exportar: {ex.Message}");
+        }
+        finally
+        {
+            exportando = false;
+        }
+    }
+
+    // Encierra el valor entre comillas y duplica las comillas internas (formato CSV)
+    private static string Csv(string? valor) => "\"" + (valor ?? string.Empty).Replace("\"", "\"\"") + "\"";
+
+    // ----- Reactividad: otro usuario (u otra pestaña) cambió turnos -----
+    private void AlCambiarTurnos() => InvokeAsync(async () =>
+    {
+        await Cargar();
+        StateHasChanged();
+    });
+
+    public void Dispose() => TurnoState.OnChange -= AlCambiarTurnos;
+}

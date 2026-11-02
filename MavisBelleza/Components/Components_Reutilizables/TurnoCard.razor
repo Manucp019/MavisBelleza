@@ -1,62 +1,95 @@
-﻿@using MavisBelleza.Models
-
-<div class="card turno-card h-100 p-3 shadow-sm border-0 rounded-4">
-    <div class="card-body d-flex flex-column justify-content-between">
-        <div>
-            <!-- Header: Nombre y Estado -->
-            <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                    <h5 class="fw-bold mb-0" style="color: #2f3e46;">
-                        👤 @Turno.NombreCliente @Turno.ApellidoCliente
-                    </h5>
-                    <span class="badge badge-servicio mt-2">@Turno.Servicio</span>
-                </div>
-                <span class="badge rounded-pill bg-success px-3 py-1">@Turno.Estado</span>
-            </div>
-
-            <hr class="my-3" style="color: #a3b18a;" />
-
-            <!-- Datos de contacto -->
-            <div class="mb-3 small">
-                <div class="mb-1 text-muted">
-                    <strong>📞 Teléfono:</strong>
-                    <a href="https://wa.me/549@(Turno.Telefono.Replace(" ", "").Replace("-", ""))" target="_blank" class="text-decoration-none fw-semibold" style="color: #3a5a40;">
-                        @Turno.Telefono 💬
-                    </a>
-                </div>
-                <div class="text-muted text-truncate">
-                    <strong>✉️ Email:</strong> @Turno.Email
-                </div>
-            </div>
-
-            <!-- Detalles del turno y pago -->
-            <div class="p-3 rounded-4 mb-3" style="background-color: #f4f6f0;">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="text-muted small">⏰ Horario:</span>
-                    <span class="fw-bold" style="color: #3a5a40;">@Turno.Horario hs</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                    <span class="text-muted small">💳 Pago:</span>
-                    <span class="fw-semibold text-dark">@Turno.MetodoPago</span>
-                </div>
-                <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">💵 Precio:</span>
-                    <span class="fs-6 fw-bold" style="color: #3a5a40;">$@Turno.Precio.ToString("N0")</span>
-                </div>
-            </div>
+﻿@* Tarjeta de un turno. No accede a la base: avisa al padre con EventCallbacks. *@
+<article class="turno-card @(EsPasado ? "turno-pasado" : "") @(Turno.Estado == EstadosTurno.Cancelado ? "turno-cancelado" : "")">
+    <header class="turno-header">
+        <div class="turno-fecha" aria-label="Fecha del turno">
+            <span class="turno-dia">@Turno.Fecha.Day</span>
+            <span class="turno-mes">@Turno.Fecha.ToString("MMM", Cultura).TrimEnd('.')</span>
         </div>
+        <div class="flex-grow-1 min-w-0">
+            <h3 class="turno-cliente text-truncate">
+                @if (Turno.Cliente is not null)
+                {
+                    <a href="clientes/@Turno.ClienteId" title="Ver ficha del cliente">@Turno.Cliente.NombreCompleto</a>
+                }
+            </h3>
+            <span class="turno-servicio">@Turno.Servicio?.Nombre</span>
+        </div>
+        <EstadoBadge Estado="@Turno.Estado" />
+    </header>
 
-        <!-- Botón de cancelación -->
-        <button class="btn btn-outline-danger-spa w-100 py-2 mt-2" @onclick="() => OnDelete.InvokeAsync(Turno.Id)">
-            Cancelar Turno
+    <dl class="turno-detalle">
+        <div>
+            <dt>⏰ Horario</dt>
+            <dd><time datetime="@($"{Turno.Fecha:yyyy-MM-dd}T{Turno.Horario}")">@Turno.Fecha.ToString("ddd dd/MM", Cultura) · @Turno.Horario hs</time></dd>
+        </div>
+        <div>
+            <dt>💳 Pago</dt>
+            <dd>@Turno.MetodoPago</dd>
+        </div>
+        <div>
+            <dt>💵 Precio</dt>
+            <dd class="turno-precio">$@Turno.Precio.ToString("N0", Cultura)</dd>
+        </div>
+        @if (Turno.Cliente is not null)
+        {
+            <div>
+                <dt>📞 Contacto</dt>
+                <dd>
+                    <a href="@LinkWhatsApp" target="_blank" rel="noopener" class="turno-whatsapp">@Turno.Cliente.Telefono 💬</a>
+                </dd>
+            </div>
+        }
+    </dl>
+
+    @if (!string.IsNullOrWhiteSpace(Turno.Notas))
+    {
+        <p class="turno-notas">📝 @Turno.Notas</p>
+    }
+
+    <footer class="turno-acciones">
+        <a href="turnos/editar/@Turno.Id" class="btn btn-sm btn-outline-secondary rounded-pill">✏️ Editar</a>
+
+        @if (Turno.Estado is EstadosTurno.Pendiente)
+        {
+            <button class="btn btn-sm btn-outline-success rounded-pill" @onclick="() => CambiarEstado(EstadosTurno.Confirmado)">✔ Confirmar</button>
+        }
+        @if (Turno.Estado is EstadosTurno.Confirmado && EsPasado)
+        {
+            <button class="btn btn-sm btn-outline-info rounded-pill" @onclick="() => CambiarEstado(EstadosTurno.Realizado)">★ Realizado</button>
+        }
+        @if (Turno.Estado is EstadosTurno.Pendiente or EstadosTurno.Confirmado)
+        {
+            <button class="btn btn-sm btn-dorado-outline rounded-pill" @onclick="() => CambiarEstado(EstadosTurno.Cancelado)">Cancelar</button>
+        }
+
+        <button class="btn btn-sm btn-outline-danger rounded-pill ms-auto" title="Eliminar turno" aria-label="Eliminar turno"
+                @onclick="() => OnEliminar.InvokeAsync(Turno)">
+            🗑
         </button>
-    </div>
-</div>
+    </footer>
+</article>
 
 @code {
-    [Parameter, EditorRequired]
-    public TurnosModels Turno { get; set; } = new();
+    private static readonly System.Globalization.CultureInfo Cultura = new("es-AR");
 
-    [Parameter]
-    public EventCallback<int> OnDelete { get; set; }
+    [Parameter, EditorRequired] public Turno Turno { get; set; } = default!;
+
+    /// <summary>Se dispara al tocar el tachito; el padre muestra el modal de confirmación.</summary>
+    [Parameter] public EventCallback<Turno> OnEliminar { get; set; }
+
+    /// <summary>Se dispara al cambiar el estado (Confirmar, Realizado, Cancelar).</summary>
+    [Parameter] public EventCallback<CambioEstadoTurno> OnCambiarEstado { get; set; }
+
+    private bool EsPasado => Turno.Fecha.Date < DateTime.Today;
+
+    private string LinkWhatsApp
+    {
+        get
+        {
+            var numero = new string((Turno.Cliente?.Telefono ?? "").Where(char.IsDigit).ToArray());
+            return $"https://wa.me/549{numero}";
+        }
+    }
+
+    private Task CambiarEstado(string nuevo) => OnCambiarEstado.InvokeAsync(new CambioEstadoTurno(Turno, nuevo));
 }

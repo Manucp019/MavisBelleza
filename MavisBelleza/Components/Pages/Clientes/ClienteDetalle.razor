@@ -1,0 +1,132 @@
+﻿@page "/clientes/{Id:int}"
+@inject ClienteService ClienteService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject JsInteropService Js
+
+<PageTitle>@(cliente?.NombreCompleto ?? "Cliente") - Mavis Belleza</PageTitle>
+
+<section class="container py-2">
+    <nav aria-label="Ruta de navegación">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="clientes">Clientes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@(cliente?.NombreCompleto ?? $"#{Id}")</li>
+        </ol>
+    </nav>
+
+    @if (cargando)
+    {
+        <div class="text-center py-5" role="status"><div class="spinner-border text-success"></div></div>
+    }
+    else if (cliente is null)
+    {
+        <div class="alert alert-warning rounded-4">No existe el cliente #@Id. <a href="clientes" class="alert-link">Volver</a></div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Ficha del cliente -->
+            <div class="col-12 col-lg-4">
+                <article class="card card-spa p-4 h-100">
+                    <header class="d-flex align-items-center gap-3 mb-3">
+                        <div class="avatar" aria-hidden="true">@Iniciales</div>
+                        <div>
+                            <h1 class="fs-4 fw-bold title-marca mb-0">@cliente.NombreCompleto</h1>
+                            <small class="text-muted">Cliente desde @cliente.FechaAlta.ToString("MMMM yyyy", Cultura)</small>
+                        </div>
+                    </header>
+
+                    <dl class="mb-3 small">
+                        <dt class="text-muted fw-normal">Email</dt>
+                        <dd class="d-flex align-items-center gap-2">
+                            <a href="mailto:@cliente.Email" class="text-break">@cliente.Email</a>
+                            <button class="btn btn-sm btn-light rounded-pill py-0" title="Copiar email" @onclick="() => Copiar(cliente.Email)">📋</button>
+                        </dd>
+                        <dt class="text-muted fw-normal">Teléfono</dt>
+                        <dd class="d-flex align-items-center gap-2">
+                            <span>@cliente.Telefono</span>
+                            <button class="btn btn-sm btn-light rounded-pill py-0" title="Copiar teléfono" @onclick="() => Copiar(cliente.Telefono)">📋</button>
+                        </dd>
+                        @if (!string.IsNullOrWhiteSpace(cliente.Notas))
+                        {
+                            <dt class="text-muted fw-normal">Notas</dt>
+                            <dd>@cliente.Notas</dd>
+                        }
+                    </dl>
+
+                    <div class="d-grid gap-2 mt-auto">
+                        <button class="btn btn-spa" @onclick="NuevoTurno">✨ Nuevo turno para @cliente.Nombre</button>
+                        <a href="clientes/editar/@cliente.Id" class="btn btn-outline-secondary rounded-pill">✏️ Editar datos</a>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Historial de turnos (relación Cliente 1 -> N Turnos) -->
+            <div class="col-12 col-lg-8">
+                <section class="card card-spa p-4 h-100" aria-labelledby="titulo-historial">
+                    <header class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h2 id="titulo-historial" class="fs-5 fw-bold title-marca m-0">Historial de turnos</h2>
+                        <span class="small text-muted">
+                            @cliente.Turnos.Count turno(s) · Total realizado: <strong>$@TotalRealizado.ToString("N0", Cultura)</strong>
+                        </span>
+                    </header>
+
+                    @if (cliente.Turnos.Count == 0)
+                    {
+                        <p class="text-muted mb-0">Todavía no tiene turnos registrados.</p>
+                    }
+                    else
+                    {
+                        <ol class="list-unstyled mb-0 historial">
+                            @foreach (var t in cliente.Turnos)
+                            {
+                                <li class="d-flex flex-wrap align-items-center gap-2 py-2 border-bottom">
+                                    <time class="fw-semibold me-2" datetime="@t.Fecha.ToString("yyyy-MM-dd")">@t.Fecha.ToString("dd/MM/yyyy") · @t.Horario</time>
+                                    <span class="flex-grow-1">@t.Servicio?.Nombre</span>
+                                    <span class="text-muted small">$@t.Precio.ToString("N0", Cultura)</span>
+                                    <EstadoBadge Estado="@t.Estado" />
+                                    <a href="turnos/editar/@t.Id" class="btn btn-sm btn-light rounded-pill" title="Editar turno">✏️</a>
+                                </li>
+                            }
+                        </ol>
+                    }
+                </section>
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    private static readonly System.Globalization.CultureInfo Cultura = new("es-AR");
+
+    [Parameter] public int Id { get; set; }
+
+    private Cliente? cliente;
+    private bool cargando = true;
+
+    private string Iniciales => cliente is null ? "" :
+        $"{cliente.Nombre.FirstOrDefault()}{cliente.Apellido.FirstOrDefault()}".ToUpperInvariant();
+
+    private decimal TotalRealizado => cliente?.Turnos
+        .Where(t => t.Estado == EstadosTurno.Realizado)
+        .Sum(t => t.Precio) ?? 0;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        cargando = true;
+        cliente = await ClienteService.ObtenerConTurnosAsync(Id);
+        cargando = false;
+    }
+
+    // Navegación programática con query string
+    private void NuevoTurno() => Navigation.NavigateTo($"/turnos/nuevo?clienteId={Id}");
+
+    // JS Interop: copiar al portapapeles
+    private async Task Copiar(string texto)
+    {
+        if (await Js.CopiarAlPortapapelesAsync(texto))
+            Toast.Info($"Copiado: {texto}");
+        else
+            Toast.Error("No se pudo copiar al portapapeles.");
+    }
+}

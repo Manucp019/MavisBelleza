@@ -1,0 +1,147 @@
+﻿/* CSS Isolation: TurnoForm */
+.form-seccion {
+    margin-bottom: 1.75rem;
+}
+
+.form-seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--negro-marca);
+    margin-bottom: 0.9rem;
+}
+
+.paso {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background-color: var(--verde-hoja);
+    color: #fff;
+    font-size: 0.85rem;
+}
+
+/* InputText/InputSelect son componentes hijos: hace falta ::deep para su <input>/<select> */
+.turno-form ::deep .form-label,
+.form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--negro-marca);
+}
+
+.turno-form ::deep .notas {
+    border-radius: 18px;
+    resize: vertical;
+}
+
+/* Campos con error de validación (Blazor agrega la clase .invalid) */
+.turno-form ::deep .invalid {
+    border-color: #dc3545 !important;
+}
+
+.turno-form ::deep .valid.modified:not([type=checkbox]) {
+    border-color: var(--verde-hoja) !important;
+}
+
+/* ----- Selección de servicio ----- */
+.servicios-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+}
+
+@media (min-width: 576px) {
+    .servicios-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.servicio-opcion {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.8rem 1rem;
+    text-align: left;
+    border: 2px solid var(--borde-suave);
+    border-radius: 18px;
+    background-color: #fff;
+    transition: all 0.15s ease;
+}
+
+    .servicio-opcion:hover {
+        border-color: var(--verde-menta-suave);
+    }
+
+    .servicio-opcion.seleccionado {
+        border-color: var(--verde-hoja);
+        background-color: var(--verde-agua-fondo);
+        box-shadow: 0 4px 12px rgba(19, 137, 58, 0.15);
+    }
+
+.servicio-nombre {
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.servicio-meta {
+    font-size: 0.8rem;
+    color: var(--gris-oliva);
+}
+
+/* ----- Grilla de horarios ----- */
+.horarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr));
+    gap: 0.45rem;
+}
+
+.horario {
+    padding: 0.45rem 0;
+    border: 1px solid var(--borde-suave);
+    border-radius: 50rem;
+    background-color: #fff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--negro-marca);
+    transition: all 0.15s ease;
+}
+
+    .horario:hover:not(:disabled) {
+        background-color: var(--verde-agua-fondo);
+    }
+
+    .horario.seleccionado {
+        background-color: var(--verde-hoja);
+        border-color: var(--verde-hoja);
+        color: #fff;
+    }
+
+    .horario:disabled {
+        background-color: #f1f1f1;
+        color: #b5b5b5;
+        text-decoration: line-through;
+        cursor: not-allowed;
+    }
+
+/* ----- Resumen ----- */
+.resumen {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.9rem 1.2rem;
+    border-radius: 18px;
+    background-color: var(--negro-marca);
+    color: #fff;
+    font-size: 0.92rem;
+}
+
+    .resumen strong {
+        font-size: 1.15rem;
+        color: var(--verde-menta-suave);
+    }

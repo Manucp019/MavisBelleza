@@ -1,0 +1,57 @@
+﻿/* CSS Isolation: ModalConfirm */
+.modal-fondo {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background-color: rgba(20, 20, 20, 0.55);
+    backdrop-filter: blur(2px);
+    animation: aparecer 0.15s ease-out;
+}
+
+.modal {
+    z-index: 1055;
+    pointer-events: none; /* los clics en el costado pasan al fondo (cierra el modal) */
+}
+
+.modal-content {
+    pointer-events: auto;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.18);
+    animation: subir 0.2s ease-out;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--borde-suave);
+}
+
+.modal-title {
+    font-weight: 700;
+    color: var(--negro-marca);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--borde-suave);
+}
+
+@keyframes aparecer {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes subir {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

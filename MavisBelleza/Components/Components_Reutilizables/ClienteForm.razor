@@ -1,0 +1,61 @@
+﻿@* Modal de confirmación reutilizable. El padre decide qué hacer con la respuesta (true/false). *@
+@if (Mostrar)
+{
+    <div class="modal-fondo" @onclick="Cancelar"></div>
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <header class="modal-header">
+                    <h2 id="modal-titulo" class="modal-title fs-5">@Titulo</h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" @onclick="Cancelar"></button>
+                </header>
+                <div class="modal-body">
+                    @if (ChildContent is not null)
+                    {
+                        @ChildContent
+                    }
+                    else
+                    {
+                        <p class="mb-0">@Mensaje</p>
+                    }
+                </div>
+                <footer class="modal-footer">
+                    <button class="btn btn-light rounded-pill px-4" @onclick="Cancelar">@TextoCancelar</button>
+                    <button class="btn @ClaseBotonConfirmar rounded-pill px-4" @onclick="Confirmar" disabled="@procesando">
+                        @if (procesando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        @TextoConfirmar
+                    </button>
+                </footer>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Mostrar { get; set; }
+    [Parameter] public string Titulo { get; set; } = "Confirmación";
+    [Parameter] public string Mensaje { get; set; } = "¿Está seguro?";
+    [Parameter] public string TextoConfirmar { get; set; } = "Confirmar";
+    [Parameter] public string TextoCancelar { get; set; } = "Cancelar";
+    [Parameter] public string ClaseBotonConfirmar { get; set; } = "btn-danger";
+
+    /// <summary>Contenido personalizado del cuerpo (opcional). Si no se pasa, se muestra Mensaje.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Devuelve true si confirmó, false si canceló.</summary>
+    [Parameter] public EventCallback<bool> OnResponse { get; set; }
+
+    private bool procesando;
+
+    private Task Cancelar() => procesando ? Task.CompletedTask : OnResponse.InvokeAsync(false);
+
+    private async Task Confirmar()
+    {
+        procesando = true;
+        try { await OnResponse.InvokeAsync(true); }
+        finally { procesando = false; }
+    }
+}

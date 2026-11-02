@@ -1,13 +1,24 @@
-﻿<span class="badge @ObtenerClaseBadge(Estado)">@Estado</span>
+﻿@* Muestra el estado de un turno con el color correspondiente *@
+<span class="badge rounded-pill px-3 py-1 @Clase" title="Estado: @Estado">@Icono @Estado</span>
 
 @code {
-    [Parameter] public string Estado { get; set; } = "Pendiente";
+    [Parameter, EditorRequired] public string Estado { get; set; } = EstadosTurno.Pendiente;
 
-    private string ObtenerClaseBadge(string estado) => estado switch
+    private string Clase => Estado switch
     {
-        "Confirmado" => "bg-success",
-        "Pendiente" => "bg-warning text-dark",
-        "Cancelado" => "bg-danger",
+        EstadosTurno.Confirmado => "bg-success",
+        EstadosTurno.Pendiente => "badge-dorado",
+        EstadosTurno.Realizado => "bg-info text-dark",
+        EstadosTurno.Cancelado => "bg-danger",
         _ => "bg-secondary"
+    };
+
+    private string Icono => Estado switch
+    {
+        EstadosTurno.Confirmado => "✔",
+        EstadosTurno.Pendiente => "⏳",
+        EstadosTurno.Realizado => "★",
+        EstadosTurno.Cancelado => "✖",
+        _ => ""
     };
 }

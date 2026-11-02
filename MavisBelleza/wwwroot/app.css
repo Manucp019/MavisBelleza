@@ -2,23 +2,157 @@
    PALETA OFICIAL DE COLORES - MAVIS BELLEZA
    ========================================== */
 :root {
-    --verde-agua-fondo: #dbeec8; /* Verde acuarela claro del logo */
-    --verde-menta-suave: #c2e59c; /* Verde menta suave para activos/badges */
-    --verde-hoja: #2e8b57; /* Verde esmeralda de las hojas del logo */
-    --negro-marca: #111111; /* Negro para títulos y bordes */
-    --dorado-acento: #e6c260; /* Dorado suave del logo */
-    --fondo-pantalla: #f6faef; /* Fondo de página fresco y luminoso */
+    /* Tomados del logo */
+    --verde-acuarela-claro: #e3f3d3; /* fondo acuarela más claro */
+    --verde-agua-fondo: #d5ebc4; /* acuarela (fondos de tarjetas, chips) */
+    --verde-menta-suave: #b0dd8d; /* acuarela intensa (activos, badges) */
+    --verde-acuarela-oscuro: #9fcd7d;
+    --verde-hoja: #13893a; /* hojas de la ilustración */
+    --verde-hoja-oscuro: #0d6b2c;
+    --dorado-acento: #d9b62e; /* pelo dorado */
+    --dorado-suave: #f6ebbd;
+    --negro-marca: #141414; /* líneas y letras del logo */
+    --gris-oliva: #5b6b48; /* texto secundario con tono verde */
+    /* Derivados */
+    --fondo-pantalla: #f4faee;
+    --fondo-suave: #eef7e5;
+    --borde-suave: #cfe6bb;
     --blanco-card: #ffffff;
-    --navbar-oscuro: #2f3e46; /* Fondo verde oscuro del Top Navbar */
+    --navbar-oscuro: var(--negro-marca);
+    --fuente-marca: 'Amatic SC', 'Segoe Print', cursive;
 }
+
+/* ===== CARRUSEL ===== */
+.mb-carrusel {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 3px solid #fff;
+    background-color: var(--negro-marca);
+    box-shadow: 0 12px 28px rgba(20, 20, 20, 0.18);
+}
+
+.mb-carrusel-pista {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+    transition: transform 0.6s ease;
+}
+
+.mb-carrusel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+    .mb-carrusel-slide img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mb-carrusel-slide figcaption {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 2rem 1rem 2.4rem;
+        background: linear-gradient(transparent, rgba(20, 20, 20, 0.7));
+        color: #fff;
+        font-weight: 600;
+        text-align: center;
+    }
+
+.mb-carrusel-flecha {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 2.6rem;
+    height: 2.6rem;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.85);
+    color: var(--negro-marca);
+    font-size: 1.8rem;
+    line-height: 2.4rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+}
+
+    .mb-carrusel-flecha:hover {
+        background-color: var(--verde-menta-suave);
+    }
+
+.mb-izquierda {
+    left: 0.75rem;
+}
+
+.mb-derecha {
+    right: 0.75rem;
+}
+
+.mb-carrusel-puntos {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.9rem;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    gap: 0.45rem;
+}
+
+.mb-punto {
+    width: 0.65rem;
+    height: 0.65rem;
+    padding: 0;
+    border: none;
+    border-radius: 50rem;
+    background-color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .mb-punto.mb-activo {
+        width: 1.8rem;
+        background-color: var(--dorado-acento);
+    }
+
 
 /* ==========================================
    ESTILOS GENERALES Y PÁGINA
    ========================================== */
 body {
     background-color: var(--fondo-pantalla) !important;
+    background-image: url('img/fondo.jpg');
+    background-size: cover; /* la imagen cubre toda la pantalla */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed; /* queda quieta al hacer scroll */
     color: var(--negro-marca) !important;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: 'Quicksand', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+}
+
+/* En celulares el fondo se desplaza con la página (fixed falla en iOS) */
+@media (max-width: 767.98px) {
+    body {
+        background-attachment: scroll;
+    }
+}
+
+/* Saca el recuadro verde que pone el navegador al enfocar el título */
+h1:focus,
+h1:focus-visible {
+    outline: none;
 }
 
 /* ==========================================
@@ -26,14 +160,21 @@ body {
    ========================================== */
 .top-navbar {
     background-color: var(--navbar-oscuro) !important;
+    border-bottom: 3px solid var(--dorado-acento);
+}
+
+.nav-marca-texto {
+    font-family: var(--fuente-marca);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
 }
 
 .nav-brand-logo {
-    width: 42px !important;
-    height: 42px !important;
+    width: 46px !important;
+    height: 46px !important;
     object-fit: contain !important;
-    background-color: var(--blanco-card) !important;
-    padding: 0.25rem !important;
 }
 
 .nav-toggler-white {
@@ -71,8 +212,8 @@ body {
 .card-spa {
     background-color: var(--blanco-card) !important;
     border-radius: 28px !important;
-    box-shadow: 0 10px 25px rgba(46, 139, 87, 0.08) !important;
-    border: 1px solid #e1eed1 !important;
+    box-shadow: 0 10px 25px rgba(19, 137, 58, 0.08) !important;
+    border: 1px solid var(--borde-suave) !important;
 }
 
 /* BOTÓN CONFIRMAR RESERVA (VERDE RELLENO Y REDONDEADO) */
@@ -86,10 +227,10 @@ body {
 }
 
     .btn-spa:hover {
-        background-color: #246d44 !important;
+        background-color: var(--verde-hoja-oscuro) !important;
         color: #ffffff !important;
         transform: translateY(-1px) !important;
-        box-shadow: 0 6px 15px rgba(46, 139, 87, 0.25) !important;
+        box-shadow: 0 6px 15px rgba(19, 137, 58, 0.25) !important;
     }
 
 /* INPUTS Y DESPLEGABLES REDONDEADOS (PÍLDORA) */
@@ -102,7 +243,7 @@ body {
 
     .input-spa:focus {
         border-color: var(--verde-hoja) !important;
-        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.15) !important;
+        box-shadow: 0 0 0 0.25rem rgba(19, 137, 58, 0.15) !important;
     }
 
 .select-spa {
@@ -114,9 +255,218 @@ body {
 
     .select-spa:focus {
         border-color: var(--verde-hoja) !important;
-        box-shadow: 0 0 0 0.25rem rgba(46, 139, 87, 0.15) !important;
+        box-shadow: 0 0 0 0.25rem rgba(19, 137, 58, 0.15) !important;
     }
 
 .title-marca {
     color: var(--negro-marca) !important;
 }
+
+/* Títulos principales con la letra manuscrita del logo */
+h1.title-marca,
+h2.title-marca,
+.fuente-marca {
+    font-family: var(--fuente-marca);
+    font-weight: 700 !important;
+    letter-spacing: 0.06em;
+}
+
+h1.title-marca {
+    font-size: clamp(2.6rem, 6vw, 3.6rem) !important;
+}
+
+h2.title-marca {
+    font-size: clamp(2.1rem, 4.5vw, 2.7rem) !important;
+}
+
+/* ==========================================
+   UTILIDADES Y ELEMENTOS COMPARTIDOS
+   ========================================== */
+.min-w-0 {
+    min-width: 0;
+}
+
+/* Ancho cómodo para formularios, centrado */
+.contenedor-form {
+    max-width: 760px;
+}
+
+.breadcrumb a {
+    color: var(--verde-hoja);
+    text-decoration: none;
+}
+
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--verde-agua-fondo);
+    color: var(--verde-hoja);
+    font-weight: 800;
+    font-size: 1.2rem;
+}
+
+/* Banner y tarjetas del Home */
+/* Fondo tipo acuarela, como el del logo */
+.hero-banner {
+    background: radial-gradient(circle at 15% 25%, rgba(159, 205, 125, 0.55), transparent 45%), radial-gradient(circle at 85% 20%, rgba(176, 221, 141, 0.6), transparent 40%), radial-gradient(circle at 70% 85%, rgba(213, 235, 196, 0.9), transparent 50%), radial-gradient(circle at 25% 80%, rgba(217, 182, 46, 0.12), transparent 35%), var(--verde-acuarela-claro);
+    border: 1px solid var(--borde-suave);
+    border-radius: 32px !important;
+}
+
+.hero-logo {
+    width: clamp(150px, 30vw, 220px);
+    height: auto;
+    filter: drop-shadow(0 10px 18px rgba(20, 20, 20, 0.15));
+}
+
+/* Línea decorativa dorada bajo los títulos */
+.subrayado-dorado::after {
+    content: "";
+    display: block;
+    width: 64px;
+    height: 3px;
+    margin: 0.5rem auto 0;
+    border-radius: 3px;
+    background-color: var(--dorado-acento);
+}
+
+.card-servicio {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .card-servicio:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px rgba(19, 137, 58, 0.15) !important;
+    }
+
+.card-servicio-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+.badge-servicio {
+    background-color: var(--verde-agua-fondo);
+    color: var(--negro-marca);
+    font-weight: 600;
+}
+
+.price-text {
+    color: var(--verde-hoja);
+}
+
+.map-container {
+    height: 360px;
+}
+
+@media (max-width: 575.98px) {
+    .map-container {
+        height: 260px;
+    }
+}
+
+.btn-outline-danger-spa {
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    border-radius: 50rem;
+}
+
+/* Foco visible para navegación con teclado (accesibilidad) */
+:focus-visible {
+    outline: 3px solid rgba(19, 137, 58, 0.45);
+    outline-offset: 2px;
+}
+
+/* Barra de error de Blazor (aparece si se cae la conexión con el servidor) */
+#blazor-error-ui {
+    background: #fff3cd;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1100;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.validation-message {
+    margin-top: 0.25rem;
+}
+
+.texto-hero {
+    color: var(--gris-oliva);
+}
+
+/* Botón secundario: contorno negro como las líneas del logo */
+.btn-marca-outline {
+    border: 2px solid var(--negro-marca);
+    color: var(--negro-marca);
+    background-color: rgba(255, 255, 255, 0.6);
+    border-radius: 50rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .btn-marca-outline:hover {
+        background-color: var(--negro-marca);
+        color: #fff;
+    }
+
+/* Precio y detalles dorados en las tarjetas de servicio */
+.card-servicio {
+    border-top: 4px solid var(--verde-menta-suave) !important;
+}
+
+    .card-servicio:hover {
+        border-top-color: var(--dorado-acento) !important;
+    }
+
+/* Enlaces generales en verde hoja */
+a {
+    color: var(--verde-hoja);
+}
+
+    a:hover {
+        color: var(--verde-hoja-oscuro);
+    }
+
+/* Selección de texto con el verde acuarela */
+::selection {
+    background-color: var(--verde-menta-suave);
+    color: var(--negro-marca);
+}
+
+/* Pie de página del sitio */
+.pie-pagina {
+    background-color: var(--negro-marca) !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    border-top: 3px solid var(--dorado-acento) !important;
+}
+
+/* Dorado del logo en lugar del amarillo de Bootstrap */
+.badge-dorado {
+    background-color: var(--dorado-acento) !important;
+    color: var(--negro-marca) !important;
+}
+
+.btn-dorado-outline {
+    border: 1px solid var(--dorado-acento);
+    color: #8a6d00;
+    background-color: transparent;
+}
+
+    .btn-dorado-outline:hover {
+        background-color: var(--dorado-acento);
+        color: var(--negro-marca);
+    }

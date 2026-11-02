@@ -1,0 +1,116 @@
+﻿@page "/turnos/nuevo"
+@page "/turnos/nuevo/{ServicioId:int}"
+@page "/turnos/editar/{Id:int}"
+@inject TurnoService TurnoService
+@inject ServicioService ServicioService
+@inject ClienteService ClienteService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>@(EsEdicion ? "Editar turno" : "Nuevo turno") - Mavis Belleza</PageTitle>
+
+<section class="container my-3 contenedor-form">
+    <nav aria-label="Ruta de navegación">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="turnos">Turnos</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@(EsEdicion ? $"Editar #{Id}" : "Nuevo")</li>
+        </ol>
+    </nav>
+
+    <article class="card card-spa p-4 p-md-5 border-0">
+        <header class="text-center mb-4">
+            <h1 class="fw-bold fs-2 title-marca">@(EsEdicion ? "Editar turno" : "Agendar nuevo turno")</h1>
+            <p class="text-muted small mb-0">
+                @(EsEdicion ? "Modificá los datos y guardá los cambios" : "Ingresá tus datos, elegí el tratamiento, el día y un horario disponible")
+            </p>
+        </header>
+
+        @if (noEncontrado)
+        {
+            <div class="alert alert-warning rounded-4 text-center">
+                No existe el turno #@Id. <a href="turnos" class="alert-link">Volver al listado</a>
+            </div>
+        }
+        else if (modelo is null || servicios is null)
+        {
+            <div class="text-center py-5" role="status"><div class="spinner-border text-success"></div></div>
+        }
+        else
+        {
+            <TurnoForm @ref="formulario" Model="modelo" Servicios="servicios" Guardando="guardando"
+                       OnValidSubmit="Guardar" OnCancelar="Volver" />
+        }
+    </article>
+</section>
+
+@code {
+    // ----- Parámetros de ruta -----
+    [Parameter] public int? Id { get; set; }          // /turnos/editar/5
+    [Parameter] public int? ServicioId { get; set; }  // /turnos/nuevo/2 (viene desde las tarjetas del Home)
+
+    // ----- Parámetro de query string -----
+    [SupplyParameterFromQuery(Name = "clienteId")] public int? ClienteId { get; set; } // /turnos/nuevo?clienteId=3
+
+    private bool EsEdicion => Id.HasValue;
+
+    private TurnoFormModel? modelo;
+    private List<Servicio>? servicios;
+    private TurnoForm? formulario;
+    private bool guardando;
+    private bool noEncontrado;
+    private string? claveCargada;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Solo se recarga el modelo si cambió la ruta (evita pisar lo que el usuario está escribiendo)
+        var clave = $"{Id}|{ServicioId}|{ClienteId}";
+        if (clave == claveCargada) return;
+        claveCargada = clave;
+
+        servicios ??= await ServicioService.ListarActivosAsync();
+        noEncontrado = false;
+
+        if (EsEdicion)
+        {
+            var turno = await TurnoService.ObtenerAsync(Id!.Value);
+            if (turno is null) { noEncontrado = true; return; }
+            modelo = TurnoFormModel.DesdeEntidad(turno);
+        }
+        else
+        {
+            // Precarga de datos si viene un cliente (desde su ficha) o un servicio (desde el Home)
+            modelo = new TurnoFormModel();
+            if (ClienteId is int cid && await ClienteService.ObtenerAsync(cid) is Cliente cliente)
+                modelo = TurnoFormModel.DesdeCliente(cliente);
+            if (ServicioId is int sid && servicios.Any(s => s.Id == sid))
+                modelo.ServicioId = sid;
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (modelo is null) return;
+        guardando = true;
+        try
+        {
+            await TurnoService.GuardarAsync(modelo);
+            Toast.Exito(EsEdicion ? "Cambios guardados." : $"¡Turno agendado para el {modelo.Fecha:dd/MM} a las {modelo.Horario} hs!");
+            Navigation.NavigateTo("/turnos");   // navegación programática
+        }
+        catch (HorarioOcupadoException ex)
+        {
+            Toast.Error(ex.Message);
+            if (formulario is not null) await formulario.CargarDisponibilidad();
+        }
+        catch (Exception ex)
+        {
+            Toast.Error($"No se pudo guardar el turno: {ex.Message}");
+        }
+        finally
+        {
+            guardando = false;
+        }
+    }
+
+    private void Volver() => Navigation.NavigateTo("/turnos");
+}

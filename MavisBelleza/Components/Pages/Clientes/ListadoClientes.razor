@@ -1,0 +1,133 @@
+﻿@page "/clientes"
+@inject ClienteService ClienteService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+@inject JsInteropService Js
+
+<PageTitle>Clientes - Mavis Belleza</PageTitle>
+
+<section class="container py-2">
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h1 class="fw-bold title-marca fs-2 m-0">Clientes</h1>
+            <p class="text-muted small m-0">Fichas de clientes e historial de tratamientos</p>
+        </div>
+        <a href="clientes/nuevo" class="btn btn-spa px-4">+ Nuevo Cliente</a>
+    </header>
+
+    <div class="mb-4">
+        <Buscador Valor="@Q" ValorChanged="Buscar" Placeholder="Buscar por nombre, apellido, email o teléfono..." />
+    </div>
+
+    @if (resultado is null)
+    {
+        <div class="text-center py-5" role="status"><div class="spinner-border text-success"></div></div>
+    }
+    else if (resultado.TotalItems == 0)
+    {
+        <div class="card card-spa text-center py-5 px-4">
+            <h2 class="fw-bold title-marca fs-4">@(string.IsNullOrWhiteSpace(Q) ? "Todavía no hay clientes" : "Sin resultados")</h2>
+            <p class="text-muted mb-0">@(string.IsNullOrWhiteSpace(Q) ? "Se crean solos al reservar un turno, o podés registrarlos a mano." : $"No hay clientes que coincidan con \"{Q}\".")</p>
+        </div>
+    }
+    else
+    {
+        <!-- Tabla en escritorio / tarjetas apiladas en celular (Bootstrap responsive) -->
+        <div class="card card-spa p-0 overflow-hidden">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <caption class="visually-hidden">Listado de clientes</caption>
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" class="ps-4">Cliente</th>
+                            <th scope="col" class="d-none d-md-table-cell">Contacto</th>
+                            <th scope="col" class="text-center">Turnos</th>
+                            <th scope="col" class="d-none d-lg-table-cell">Próximo turno</th>
+                            <th scope="col" class="text-end pe-4"><span class="visually-hidden">Acciones</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in resultado.Items)
+                        {
+                            <tr @key="c.Id">
+                                <td class="ps-4">
+                                    <a href="clientes/@c.Id" class="fw-semibold text-decoration-none link-dark">@c.NombreCompleto</a>
+                                    <div class="small text-muted d-md-none">@c.Telefono</div>
+                                </td>
+                                <td class="d-none d-md-table-cell small">
+                                    <div>@c.Email</div>
+                                    <div class="text-muted">@c.Telefono</div>
+                                </td>
+                                <td class="text-center"><span class="badge rounded-pill text-bg-light border">@c.CantidadTurnos</span></td>
+                                <td class="d-none d-lg-table-cell small">
+                                    @(c.ProximoTurno?.ToString("dd/MM/yyyy") ?? "—")
+                                </td>
+                                <td class="text-end pe-4 text-nowrap">
+                                    <a href="clientes/@c.Id" class="btn btn-sm btn-outline-secondary rounded-pill" title="Ver ficha">👁</a>
+                                    <a href="clientes/editar/@c.Id" class="btn btn-sm btn-outline-secondary rounded-pill" title="Editar">✏️</a>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill" title="Eliminar" aria-label="Eliminar @c.NombreCompleto"
+                                            @onclick="() => clienteAEliminar = c">🗑</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <Paginador PaginaActual="resultado.Pagina" TotalPaginas="resultado.TotalPaginas"
+                   TotalItems="resultado.TotalItems" Desde="resultado.Desde" Hasta="resultado.Hasta"
+                   OnPageChanged="IrAPagina" />
+    }
+</section>
+
+<ModalConfirm Mostrar="clienteAEliminar is not null"
+              Titulo="Eliminar cliente"
+              Mensaje="@($"¿Eliminar a {clienteAEliminar?.NombreCompleto}? Esta acción no se puede deshacer.")"
+              TextoConfirmar="Sí, eliminar"
+              OnResponse="ConfirmarEliminar" />
+
+@code {
+    [SupplyParameterFromQuery(Name = "q")] public string? Q { get; set; }
+    [SupplyParameterFromQuery(Name = "pagina")] public int? Pagina { get; set; }
+
+    private PagedResult<ClienteListado>? resultado;
+    private ClienteListado? clienteAEliminar;
+
+    protected override async Task OnParametersSetAsync() => await Cargar();
+
+    private async Task Cargar() => resultado = await ClienteService.BuscarAsync(Q, Pagina ?? 1);
+
+    private void Navegar(string? q, int pagina) =>
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameters(new Dictionary<string, object?>
+        {
+            ["q"] = string.IsNullOrWhiteSpace(q) ? null : q,
+            ["pagina"] = pagina > 1 ? pagina : null
+        }));
+
+    private void Buscar(string? texto) => Navegar(texto, 1);
+
+    private async Task IrAPagina(int pagina)
+    {
+        Navegar(Q, pagina);
+        await Js.ScrollArribaAsync();
+    }
+
+    private async Task ConfirmarEliminar(bool confirmado)
+    {
+        if (confirmado && clienteAEliminar is not null)
+        {
+            var r = await ClienteService.EliminarAsync(clienteAEliminar.Id);
+            if (r.Exito)
+            {
+                Toast.Exito("Cliente eliminado.");
+                await Cargar();
+            }
+            else
+            {
+                Toast.Error(r.Error!);
+            }
+        }
+        clienteAEliminar = null;
+    }
+}

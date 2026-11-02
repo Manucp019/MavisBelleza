@@ -1,0 +1,99 @@
+﻿@implements IDisposable
+
+@* Carrusel de fotos reutilizable: pasa solo cada X segundos, con flechas, puntitos y swipe en celular.
+   Los estilos están en Carrusel.razor.css (CSS Isolation). *@
+@if (Fotos.Count > 0)
+{
+    <div class="mb-carrusel" style="max-width: @AnchoMaximo;" role="region" aria-roledescription="carrusel" aria-label="@Titulo"
+         @onmouseenter="Pausar" @onmouseleave="Reanudar"
+         @ontouchstart="TocarInicio" @ontouchend="TocarFin">
+
+        <div class="mb-carrusel-pista" style="transform: translateX(-@(actual * 100)%);">
+            @for (var i = 0; i < Fotos.Count; i++)
+            {
+                var foto = Fotos[i];
+                <figure class="mb-carrusel-slide" style="aspect-ratio: @Proporcion;" aria-hidden="@(i != actual ? "true" : "false")">
+                    <img src="@foto.Url" alt="@foto.Descripcion" loading="lazy" />
+                    @if (!string.IsNullOrWhiteSpace(foto.Descripcion))
+                    {
+                        <figcaption>@foto.Descripcion</figcaption>
+                    }
+                </figure>
+            }
+        </div>
+
+        @if (Fotos.Count > 1)
+        {
+            <button type="button" class="mb-carrusel-flecha mb-izquierda" aria-label="Foto anterior" @onclick="Anterior">&#8249;</button>
+            <button type="button" class="mb-carrusel-flecha mb-derecha" aria-label="Foto siguiente" @onclick="Siguiente">&#8250;</button>
+
+            <div class="mb-carrusel-puntos">
+                @for (var i = 0; i < Fotos.Count; i++)
+                {
+                    var indice = i;
+                    <button type="button" class="mb-punto @(indice == actual ? "mb-activo" : "")"
+                            aria-label="Ir a la foto @(indice + 1)" @onclick="() => IrA(indice)"></button>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    public record FotoCarrusel(string Url, string Descripcion = "");
+
+    [Parameter, EditorRequired] public List<FotoCarrusel> Fotos { get; set; } = new();
+    [Parameter] public string Titulo { get; set; } = "Galería de fotos";
+
+    /// <summary>Segundos entre foto y foto (0 = no pasa solo).</summary>
+    [Parameter] public int Intervalo { get; set; } = 4;
+
+    /// <summary>Ancho máximo del carrusel (ej: "600px").</summary>
+    [Parameter] public string AnchoMaximo { get; set; } = "600px";
+
+    /// <summary>Proporción de las fotos: "4 / 3", "16 / 9", "1 / 1" (cuadrado)...</summary>
+    [Parameter] public string Proporcion { get; set; } = "4 / 3";
+
+    private int actual;
+    private bool pausado;
+    private double toqueX;
+    private Timer? timer;
+
+    protected override void OnInitialized()
+    {
+        if (Intervalo > 0)
+            timer = new Timer(_ => AvanzarSolo(), null, TimeSpan.FromSeconds(Intervalo), TimeSpan.FromSeconds(Intervalo));
+    }
+
+    private void AvanzarSolo()
+    {
+        if (pausado || Fotos.Count < 2) return;
+        actual = (actual + 1) % Fotos.Count;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Siguiente() { actual = (actual + 1) % Fotos.Count; ReiniciarTimer(); }
+    private void Anterior() { actual = (actual - 1 + Fotos.Count) % Fotos.Count; ReiniciarTimer(); }
+    private void IrA(int i) { actual = i; ReiniciarTimer(); }
+
+    private void Pausar() => pausado = true;
+    private void Reanudar() => pausado = false;
+
+    // Deslizar con el dedo en el celular
+    private void TocarInicio(TouchEventArgs e) => toqueX = e.Touches.FirstOrDefault()?.ClientX ?? 0;
+    private void TocarFin(TouchEventArgs e)
+    {
+        var fin = e.ChangedTouches.FirstOrDefault()?.ClientX ?? toqueX;
+        var diferencia = fin - toqueX;
+        if (diferencia < -40) Siguiente();
+        else if (diferencia > 40) Anterior();
+    }
+
+    private void ReiniciarTimer()
+    {
+        if (Intervalo > 0)
+            timer?.Change(TimeSpan.FromSeconds(Intervalo), TimeSpan.FromSeconds(Intervalo));
+    }
+
+    public void Dispose() => timer?.Dispose();
+}

@@ -1,0 +1,53 @@
+﻿/* CSS Isolation: Buscador */
+.buscador {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.buscador-icono {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.95rem;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.buscador-input {
+    border-radius: 50rem;
+    padding: 0.65rem 2.75rem 0.65rem 2.6rem;
+    border: 1px solid var(--borde-suave);
+    background-color: #fff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .buscador-input:focus {
+        border-color: var(--verde-hoja);
+        box-shadow: 0 0 0 0.25rem rgba(19, 137, 58, 0.15);
+    }
+
+    /* Ocultamos la "x" nativa de Chrome para usar la nuestra */
+    .buscador-input::-webkit-search-cancel-button {
+        -webkit-appearance: none;
+    }
+
+.buscador-limpiar {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.9rem;
+    height: 1.9rem;
+    border: none;
+    border-radius: 50%;
+    background-color: var(--verde-agua-fondo);
+    color: var(--negro-marca);
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+    .buscador-limpiar:hover {
+        background-color: var(--verde-menta-suave);
+    }

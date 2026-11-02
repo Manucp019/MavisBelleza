@@ -1,0 +1,84 @@
+﻿@page "/clientes/nuevo"
+@page "/clientes/editar/{Id:int}"
+@inject ClienteService ClienteService
+@inject NavigationManager Navigation
+@inject ToastService Toast
+
+<PageTitle>@(EsEdicion ? "Editar cliente" : "Nuevo cliente") - Mavis Belleza</PageTitle>
+
+<section class="container my-3 contenedor-form">
+    <nav aria-label="Ruta de navegación">
+        <ol class="breadcrumb small">
+            <li class="breadcrumb-item"><a href="clientes">Clientes</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@(EsEdicion ? "Editar" : "Nuevo")</li>
+        </ol>
+    </nav>
+
+    <article class="card card-spa p-4 p-md-5 border-0">
+        <h1 class="fw-bold fs-2 title-marca text-center mb-4">@(EsEdicion ? "Editar cliente" : "Registrar cliente")</h1>
+
+        @if (noEncontrado)
+        {
+            <div class="alert alert-warning rounded-4 text-center">No existe el cliente #@Id.</div>
+        }
+        else if (cliente is null)
+        {
+            <div class="text-center py-5" role="status"><div class="spinner-border text-success"></div></div>
+        }
+        else
+        {
+            <ClienteForm Cliente="cliente" Guardando="guardando" ErrorServidor="@error"
+                         OnValidSubmit="Guardar" OnCancelar="Volver" />
+        }
+    </article>
+</section>
+
+@code {
+    [Parameter] public int? Id { get; set; }
+
+    private bool EsEdicion => Id.HasValue;
+    private Cliente? cliente;
+    private bool guardando;
+    private bool noEncontrado;
+    private string? error;
+    private int? idCargado = -1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (idCargado == Id) return;
+        idCargado = Id;
+        error = null;
+        noEncontrado = false;
+
+        if (EsEdicion)
+        {
+            cliente = await ClienteService.ObtenerAsync(Id!.Value);
+            noEncontrado = cliente is null;
+        }
+        else
+        {
+            cliente = new Cliente();
+        }
+    }
+
+    private async Task Guardar()
+    {
+        if (cliente is null) return;
+        guardando = true;
+        error = null;
+
+        var r = await ClienteService.GuardarAsync(cliente);
+        guardando = false;
+
+        if (!r.Exito)
+        {
+            error = r.Error;
+            return;
+        }
+
+        Toast.Exito(EsEdicion ? "Datos del cliente actualizados." : "Cliente registrado.");
+        Navigation.NavigateTo($"/clientes/{r.Id}");
+    }
+
+    private void Volver() => Navigation.NavigateTo(EsEdicion ? $"/clientes/{Id}" : "/clientes");
+}

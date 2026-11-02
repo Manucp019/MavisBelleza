@@ -1,18 +1,27 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page d-flex flex-column min-vh-100">
-    <!-- Menú de Navegación Superior -->
+    <!-- Encabezado con la navegación principal -->
     <header class="w-100 sticky-top">
         <NavMenu />
     </header>
 
-    <!-- Contenido Principal de las Páginas -->
-    <main class="flex-grow-1 py-4">
+    <!-- Contenido de cada página -->
+    <main id="contenido" class="flex-grow-1 py-4">
         @Body
     </main>
 
-    <!-- Pie de Página Opcional -->
-    <footer class="text-center py-3 text-muted small border-top bg-white">
-        &copy; @DateTime.Now.Year Mavis Belleza — Especialidad en Cejas y Pestañas
+    <!-- Pie de página -->
+    <footer class="pie-pagina text-center py-3 small">
+        <p class="mb-0">&copy; @DateTime.Now.Year Mavis Belleza — Especialidad en Cejas y Pestañas</p>
     </footer>
+
+    <!-- Notificaciones (toasts) del usuario actual -->
+    <Toasts />
+</div>
+
+<div id="blazor-error-ui" role="alert">
+    Ocurrió un error inesperado.
+    <a href="" class="reload">Recargar</a>
+    <a class="dismiss">✕</a>
 </div>

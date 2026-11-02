@@ -1,104 +1,308 @@
-﻿@using MavisBelleza.Models
+﻿@implements IDisposable
+@inject TurnoService TurnoService
+@inject ClienteService ClienteService
+@inject ToastService Toast
 
-<EditForm Model="Turno" OnValidSubmit="GuardarTurno">
+@*
+    Formulario de turnos (alta y edición) con validación avanzada:
+      1. DataAnnotationsValidator -> [Required], [EmailAddress], [RegularExpression], [StringLength]
+      2. Atributos propios        -> [FechaTurnoValida] (no domingo, no pasado, máx 90 días) y [HorarioDeAtencion]
+      3. IValidatableObject       -> reglas entre campos (horario pasado si es hoy, estado vs. fecha)
+      4. ValidationMessageStore   -> validación contra la base: el horario no puede estar ocupado
+*@
+<EditForm EditContext="editContext" OnSubmit="Enviar" FormName="turno-form" class="turno-form">
     <DataAnnotationsValidator />
 
-    <div class="row g-3">
-        <!-- Nombre y Apellido -->
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Nombre</label>
-            <InputText @bind-Value="Turno.NombreCliente" class="form-control input-spa py-2" placeholder="Ej: Ana" />
-            <ValidationMessage For="@(() => Turno.NombreCliente)" class="text-danger small" />
+    @if (mostrarResumenErrores)
+    {
+        <ValidationSummary class="alert alert-danger small rounded-4 ps-4" />
+    }
+
+    <fieldset class="form-seccion">
+        <legend class="form-seccion-titulo"><span class="paso">1</span> Tus datos</legend>
+        <div class="row g-3">
+            <div class="col-12">
+                <label for="email" class="form-label">Email</label>
+                <InputText id="email" type="email" @bind-Value="Model.Email" @bind-Value:after="BuscarClientePorEmail"
+                           class="form-control input-spa" placeholder="ejemplo@correo.com" autocomplete="email" />
+                <ValidationMessage For="() => Model.Email" class="text-danger small" />
+                @if (clienteEncontrado)
+                {
+                    <p class="form-text text-success mb-0">✔ Te encontramos: completamos tus datos guardados.</p>
+                }
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="nombre" class="form-label">Nombre</label>
+                <InputText id="nombre" @bind-Value="Model.Nombre" class="form-control input-spa" placeholder="Ej: Ana" autocomplete="given-name" />
+                <ValidationMessage For="() => Model.Nombre" class="text-danger small" />
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="apellido" class="form-label">Apellido</label>
+                <InputText id="apellido" @bind-Value="Model.Apellido" class="form-control input-spa" placeholder="Ej: Gómez" autocomplete="family-name" />
+                <ValidationMessage For="() => Model.Apellido" class="text-danger small" />
+            </div>
+            <div class="col-12">
+                <label for="telefono" class="form-label">Teléfono / WhatsApp</label>
+                <InputText id="telefono" type="tel" @bind-Value="Model.Telefono" class="form-control input-spa" placeholder="11 1234 5678" autocomplete="tel" />
+                <ValidationMessage For="() => Model.Telefono" class="text-danger small" />
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="form-seccion">
+        <legend class="form-seccion-titulo"><span class="paso">2</span> Tratamiento</legend>
+        <div class="servicios-grid" role="radiogroup" aria-label="Servicio">
+            @foreach (var s in Servicios)
+            {
+                var servicio = s;
+                <button type="button" role="radio" aria-checked="@(Model.ServicioId == servicio.Id ? "true" : "false")"
+                        class="servicio-opcion @(Model.ServicioId == servicio.Id ? "seleccionado" : "")"
+                        @onclick="() => ElegirServicio(servicio.Id)">
+                    <span class="servicio-nombre">@servicio.Nombre</span>
+                    <span class="servicio-meta">⏱️ @servicio.DuracionTexto · <strong>$@servicio.Precio.ToString("N0", Cultura)</strong></span>
+                </button>
+            }
+        </div>
+        <ValidationMessage For="() => Model.ServicioId" class="text-danger small" />
+    </fieldset>
+
+    <fieldset class="form-seccion">
+        <legend class="form-seccion-titulo"><span class="paso">3</span> Día y horario</legend>
+        <div class="row g-3">
+            <div class="col-12 col-md-6">
+                <label for="fecha" class="form-label">Fecha</label>
+                <InputDate id="fecha" @bind-Value="Model.Fecha" @bind-Value:after="CargarDisponibilidad"
+                           min="@(Model.EsEdicion ? null : DateTime.Today.ToString("yyyy-MM-dd"))"
+                           max="@DateTime.Today.AddDays(90).ToString("yyyy-MM-dd")"
+                           class="form-control input-spa" />
+                <ValidationMessage For="() => Model.Fecha" class="text-danger small" />
+            </div>
+            <div class="col-12 col-md-6">
+                <label for="pago" class="form-label">Método de pago</label>
+                <InputSelect id="pago" @bind-Value="Model.MetodoPago" class="form-select select-spa">
+                    <option value="">Seleccione...</option>
+                    @foreach (var mp in MetodosPago.Todos)
+                    {
+                        <option value="@mp">@mp</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => Model.MetodoPago" class="text-danger small" />
+            </div>
         </div>
 
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Apellido</label>
-            <InputText @bind-Value="Turno.ApellidoCliente" class="form-control input-spa py-2" placeholder="Ej: Gómez" />
-            <ValidationMessage For="@(() => Turno.ApellidoCliente)" class="text-danger small" />
+        <p class="form-label mt-3 mb-2" id="label-horarios">
+            Horarios disponibles
+            @if (cargandoHorarios)
+            {
+                <span class="spinner-border spinner-border-sm text-success ms-1" aria-hidden="true"></span>
+            }
+        </p>
+        <div class="horarios-grid" role="radiogroup" aria-labelledby="label-horarios">
+            @foreach (var h in HorariosStudio.Todos)
+            {
+                var horario = h;
+                var noDisponible = !EstaDisponible(horario);
+                <button type="button" role="radio" aria-checked="@(Model.Horario == horario ? "true" : "false")"
+                        class="horario @(Model.Horario == horario ? "seleccionado" : "")"
+                        disabled="@noDisponible" title="@(noDisponible ? "No disponible" : $"Reservar a las {horario}")"
+                        @onclick="() => ElegirHorario(horario)">
+                    @horario
+                </button>
+            }
         </div>
+        <ValidationMessage For="() => Model.Horario" class="text-danger small" />
+    </fieldset>
 
-        <!-- Contacto -->
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Teléfono / WhatsApp</label>
-            <InputText @bind-Value="Turno.Telefono" class="form-control input-spa py-2" placeholder="11 1234 5678" />
-            <ValidationMessage For="@(() => Turno.Telefono)" class="text-danger small" />
+    <fieldset class="form-seccion">
+        <legend class="form-seccion-titulo"><span class="paso">4</span> Detalles</legend>
+        <div class="row g-3">
+            @if (Model.EsEdicion)
+            {
+                <div class="col-12 col-md-6">
+                    <label for="estado" class="form-label">Estado</label>
+                    <InputSelect id="estado" @bind-Value="Model.Estado" class="form-select select-spa">
+                        @foreach (var e in EstadosTurno.Todos)
+                        {
+                            <option value="@e">@e</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => Model.Estado" class="text-danger small" />
+                </div>
+            }
+            <div class="col-12">
+                <label for="notas" class="form-label">Notas <span class="text-muted fw-normal">(opcional)</span></label>
+                <InputTextArea id="notas" @bind-Value="Model.Notas" class="form-control notas" rows="2"
+                               maxlength="300" placeholder="Alergias, preferencias, etc." />
+                <div class="d-flex justify-content-end"><small class="text-muted">@(Model.Notas?.Length ?? 0)/300</small></div>
+                <ValidationMessage For="() => Model.Notas" class="text-danger small" />
+            </div>
         </div>
+    </fieldset>
 
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Email</label>
-            <InputText @bind-Value="Turno.Email" class="form-control input-spa py-2" placeholder="ejemplo@correo.com" />
-            <ValidationMessage For="@(() => Turno.Email)" class="text-danger small" />
-        </div>
+    @if (ServicioSeleccionado is not null)
+    {
+        <aside class="resumen" aria-label="Resumen del turno">
+            <span>@ServicioSeleccionado.Nombre</span>
+            @if (!string.IsNullOrEmpty(Model.Horario))
+            {
+                <span>@Model.Fecha.ToString("dddd dd/MM", Cultura) · @Model.Horario hs</span>
+            }
+            <strong>$@ServicioSeleccionado.Precio.ToString("N0", Cultura)</strong>
+        </aside>
+    }
 
-        <!-- Servicio y Método de Pago -->
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Servicio</label>
-            <InputSelect @bind-Value="Turno.Servicio" class="form-select select-spa py-2" @onchange="OnServicioChanged">
-                <option value="">Seleccione un servicio...</option>
-                <option value="Lifting de Pestañas">Lifting de Pestañas ($30.000)</option>
-                <option value="Laminado de Cejas">Laminado de Cejas ($30.000)</option>
-                <option value="Perfilado de Cejas">Perfilado de Cejas ($15.000)</option>
-            </InputSelect>
-            <ValidationMessage For="@(() => Turno.Servicio)" class="text-danger small" />
-        </div>
-
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Método de Pago</label>
-            <InputSelect @bind-Value="Turno.MetodoPago" class="form-select select-spa py-2">
-                <option value="">Seleccione medio de pago...</option>
-                <option value="Efectivo">Efectivo</option>
-                <option value="Transferencia">Transferencia</option>
-            </InputSelect>
-            <ValidationMessage For="@(() => Turno.MetodoPago)" class="text-danger small" />
-        </div>
-
-        <!-- Fecha y Horario -->
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Fecha del Turno</label>
-            <InputDate @bind-Value="Turno.Fecha" class="form-control input-spa py-2" />
-            <ValidationMessage For="@(() => Turno.Fecha)" class="text-danger small" />
-        </div>
-
-        <div class="col-12 col-md-6">
-            <label class="form-label fw-semibold title-marca">Horario Disponible</label>
-            <InputText @bind-Value="Turno.Horario" class="form-control input-spa py-2" placeholder="Ej: 14:00" />
-            <ValidationMessage For="@(() => Turno.Horario)" class="text-danger small" />
-        </div>
-    </div>
-
-    <!-- Botón de Confirmación Verde -->
-    <div class="mt-4 text-center">
-        <button type="submit" class="btn btn-spa px-5 py-3 shadow-sm w-100 fs-6">
-            Confirmar Reserva ✨
+    <div class="d-flex flex-column flex-sm-row gap-2 mt-4">
+        @if (OnCancelar.HasDelegate)
+        {
+            <button type="button" class="btn btn-light rounded-pill px-4 py-3 flex-sm-grow-0" @onclick="OnCancelar">Volver</button>
+        }
+        <button type="submit" class="btn btn-spa px-5 py-3 flex-grow-1 fs-6" disabled="@Guardando">
+            @if (Guardando)
+            {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                <span>Guardando...</span>
+            }
+            else
+            {
+                @(Model.EsEdicion ? "Guardar cambios" : "Confirmar Reserva ✨")
+            }
         </button>
     </div>
 </EditForm>
 
 @code {
-    [Parameter, EditorRequired]
-    public TurnosModels Turno { get; set; } = new();
+    private static readonly System.Globalization.CultureInfo Cultura = new("es-AR");
 
-    [Parameter]
-    public List<TurnosModels> TurnosExistentes { get; set; } = new();
+    [Parameter, EditorRequired] public TurnoFormModel Model { get; set; } = default!;
+    [Parameter, EditorRequired] public List<Servicio> Servicios { get; set; } = new();
+    [Parameter] public bool Guardando { get; set; }
 
-    [Parameter]
-    public EventCallback OnValidSubmit { get; set; }
+    /// <summary>Se dispara solo cuando pasan TODAS las validaciones (incluida la de la base).</summary>
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancelar { get; set; }
 
-    private void OnServicioChanged(ChangeEventArgs e)
+    private EditContext editContext = default!;
+    private ValidationMessageStore mensajesServidor = default!;
+    private TurnoFormModel? modeloActual;
+
+    private HashSet<string> horariosOcupados = new();
+    private bool cargandoHorarios;
+    private bool clienteEncontrado;
+    private bool mostrarResumenErrores;
+
+    private Servicio? ServicioSeleccionado => Servicios.FirstOrDefault(s => s.Id == Model.ServicioId);
+
+    protected override async Task OnParametersSetAsync()
     {
-        var servicio = e.Value?.ToString();
-        if (servicio == "Lifting de Pestañas" || servicio == "Laminado de Cejas")
+        // Si el padre pasa un modelo nuevo (ej: al cargar un turno para editar), se arma un EditContext nuevo
+        if (!ReferenceEquals(modeloActual, Model))
         {
-            Turno.Precio = 30000;
-        }
-        else if (servicio == "Perfilado de Cejas")
-        {
-            Turno.Precio = 15000;
+            if (editContext is not null)
+                editContext.OnFieldChanged -= AlCambiarCampo;
+
+            modeloActual = Model;
+            editContext = new EditContext(Model);
+            mensajesServidor = new ValidationMessageStore(editContext);
+            editContext.OnFieldChanged += AlCambiarCampo;
+            mostrarResumenErrores = false;
+
+            await CargarDisponibilidad();
         }
     }
 
-    private async Task GuardarTurno()
+    /// <summary>Cuando el usuario corrige un campo, se borra el error "de servidor" de ese campo.</summary>
+    private void AlCambiarCampo(object? sender, FieldChangedEventArgs e)
     {
-        await OnValidSubmit.InvokeAsync();
+        mensajesServidor.Clear(e.FieldIdentifier);
+        editContext.NotifyValidationStateChanged();
+    }
+
+    /// <summary>Puede llamarse desde el padre (con @ref) si al guardar el horario resultó ocupado.</summary>
+    public async Task CargarDisponibilidad()
+    {
+        cargandoHorarios = true;
+        horariosOcupados = await TurnoService.HorariosOcupadosAsync(Model.Fecha, Model.EsEdicion ? Model.Id : null);
+        cargandoHorarios = false;
+
+        // Si el horario elegido quedó ocupado para la nueva fecha, se deselecciona
+        if (!string.IsNullOrEmpty(Model.Horario) && !EstaDisponible(Model.Horario))
+        {
+            Model.Horario = string.Empty;
+            editContext.NotifyFieldChanged(FieldIdentifier.Create(() => Model.Horario));
+        }
+        StateHasChanged();
+    }
+
+    private bool EstaDisponible(string horario)
+    {
+        if (horariosOcupados.Contains(horario)) return false;
+
+        // Si es hoy, no se pueden elegir horarios que ya pasaron (solo en altas)
+        if (!Model.EsEdicion && Model.Fecha.Date == DateTime.Today
+            && TimeOnly.TryParse(horario, out var h) && h <= TimeOnly.FromDateTime(DateTime.Now))
+            return false;
+
+        return true;
+    }
+
+    private void ElegirServicio(int id)
+    {
+        Model.ServicioId = id;
+        editContext.NotifyFieldChanged(FieldIdentifier.Create(() => Model.ServicioId));
+    }
+
+    private void ElegirHorario(string horario)
+    {
+        Model.Horario = horario;
+        editContext.NotifyFieldChanged(FieldIdentifier.Create(() => Model.Horario));
+    }
+
+    /// <summary>Autocompleta nombre y teléfono si el email ya está registrado.</summary>
+    private async Task BuscarClientePorEmail()
+    {
+        clienteEncontrado = false;
+        if (Model.EsEdicion || string.IsNullOrWhiteSpace(Model.Email)) return;
+
+        var cliente = await ClienteService.BuscarPorEmailAsync(Model.Email);
+        if (cliente is null) return;
+
+        if (string.IsNullOrWhiteSpace(Model.Nombre)) Model.Nombre = cliente.Nombre;
+        if (string.IsNullOrWhiteSpace(Model.Apellido)) Model.Apellido = cliente.Apellido;
+        if (string.IsNullOrWhiteSpace(Model.Telefono)) Model.Telefono = cliente.Telefono;
+        clienteEncontrado = true;
+    }
+
+    private async Task Enviar()
+    {
+        mensajesServidor.Clear();
+
+        // 1-3: DataAnnotations + atributos propios + IValidatableObject
+        var valido = editContext.Validate();
+
+        // 4: validación contra la base de datos
+        if (Model.Estado != EstadosTurno.Cancelado && !string.IsNullOrEmpty(Model.Horario))
+        {
+            await CargarDisponibilidad();
+            if (horariosOcupados.Contains(Model.Horario))
+            {
+                mensajesServidor.Add(() => Model.Horario,
+                    $"El {Model.Fecha:dd/MM} a las {Model.Horario} ya está reservado. Elegí otro horario.");
+                valido = false;
+            }
+        }
+
+        editContext.NotifyValidationStateChanged();
+        mostrarResumenErrores = !valido;
+
+        if (valido)
+            await OnValidSubmit.InvokeAsync();
+        else
+            Toast.Error("Revisá los campos marcados en rojo.");
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+            editContext.OnFieldChanged -= AlCambiarCampo;
     }
 }

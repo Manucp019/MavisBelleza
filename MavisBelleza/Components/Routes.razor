@@ -3,4 +3,14 @@
         <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
+    <NotFound>
+        <PageTitle>Página no encontrada - Mavis Belleza</PageTitle>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <section class="container text-center py-5">
+                <h1 class="fw-bold title-marca">404</h1>
+                <p class="text-muted">La página que buscás no existe.</p>
+                <a href="" class="btn btn-spa px-4">Volver al inicio</a>
+            </section>
+        </LayoutView>
+    </NotFound>
 </Router>

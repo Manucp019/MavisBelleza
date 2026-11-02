@@ -1,25 +1,67 @@
-﻿<nav aria-label="Navegación">
-    <ul class="pagination justify-content-center">
-        <li class="page-item @(PaginaActual == 1 ? "disabled" : "")">
-            <button class="page-link" @onclick="() => CambiarPagina(PaginaActual - 1)">Anterior</button>
-        </li>
-        <li class="page-item disabled">
-            <span class="page-link">Página @PaginaActual de @TotalPaginas</span>
-        </li>
-        <li class="page-item @(PaginaActual == TotalPaginas || TotalPaginas == 0 ? "disabled" : "")">
-            <button class="page-link" @onclick="() => CambiarPagina(PaginaActual + 1)">Siguiente</button>
-        </li>
-    </ul>
-</nav>
+﻿@* Paginador reutilizable: muestra "Anterior", números de página (con ventana) y "Siguiente". *@
+@if (TotalPaginas > 1)
+{
+    <nav class="paginador" aria-label="Paginación">
+        <p class="paginador-info">
+            Mostrando <strong>@Desde–@Hasta</strong> de <strong>@TotalItems</strong>
+        </p>
+        <ul class="pagination justify-content-center flex-wrap mb-0">
+            <li class="page-item @(PaginaActual <= 1 ? "disabled" : "")">
+                <button class="page-link" aria-label="Página anterior" @onclick="() => Ir(PaginaActual - 1)">‹</button>
+            </li>
+
+            @foreach (var p in PaginasVisibles())
+            {
+                if (p == 0)
+                {
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                }
+                else
+                {
+                    var pagina = p;
+                    <li class="page-item @(pagina == PaginaActual ? "active" : "")">
+                        <button class="page-link" aria-current="@(pagina == PaginaActual ? "page" : null)"
+                                @onclick="() => Ir(pagina)">
+                            @pagina
+                        </button>
+                    </li>
+                }
+            }
+
+            <li class="page-item @(PaginaActual >= TotalPaginas ? "disabled" : "")">
+                <button class="page-link" aria-label="Página siguiente" @onclick="() => Ir(PaginaActual + 1)">›</button>
+            </li>
+        </ul>
+    </nav>
+}
 
 @code {
-    [Parameter] public int PaginaActual { get; set; }
-    [Parameter] public int TotalPaginas { get; set; }
+    [Parameter, EditorRequired] public int PaginaActual { get; set; }
+    [Parameter, EditorRequired] public int TotalPaginas { get; set; }
+    [Parameter] public int TotalItems { get; set; }
+    [Parameter] public int Desde { get; set; }
+    [Parameter] public int Hasta { get; set; }
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
 
-    private async Task CambiarPagina(int nuevaPagina)
+    /// <summary>Cuántas páginas mostrar a cada lado de la actual.</summary>
+    [Parameter] public int Vecinas { get; set; } = 1;
+
+    private async Task Ir(int pagina)
     {
-        if (nuevaPagina >= 1 && nuevaPagina <= TotalPaginas)
-            await OnPageChanged.InvokeAsync(nuevaPagina);
+        if (pagina >= 1 && pagina <= TotalPaginas && pagina != PaginaActual)
+            await OnPageChanged.InvokeAsync(pagina);
+    }
+
+    /// <summary>Devuelve los números a mostrar; 0 representa "…".</summary>
+    private IEnumerable<int> PaginasVisibles()
+    {
+        var inicio = Math.Max(2, PaginaActual - Vecinas);
+        var fin = Math.Min(TotalPaginas - 1, PaginaActual + Vecinas);
+
+        yield return 1;
+        if (inicio > 2) yield return 0;
+        for (var i = inicio; i <= fin; i++) yield return i;
+        if (fin < TotalPaginas - 1) yield return 0;
+        if (TotalPaginas > 1) yield return TotalPaginas;
     }
 }

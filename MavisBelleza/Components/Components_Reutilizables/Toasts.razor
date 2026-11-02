@@ -1,0 +1,36 @@
+﻿@implements IDisposable
+@inject ToastService ToastService
+
+@* Contenedor de notificaciones. Va una sola vez en el MainLayout. *@
+<section class="toasts" aria-live="polite" aria-label="Notificaciones">
+    @foreach (var t in ToastService.Mensajes)
+    {
+        <div class="toast-item @Clase(t.Tipo)" role="status">
+            <span class="toast-icono" aria-hidden="true">@Icono(t.Tipo)</span>
+            <p class="toast-texto">@t.Texto</p>
+            <button type="button" class="toast-cerrar" aria-label="Cerrar notificación" @onclick="() => ToastService.Cerrar(t.Id)">✕</button>
+        </div>
+    }
+</section>
+
+@code {
+    protected override void OnInitialized() => ToastService.OnChange += Refrescar;
+
+    private void Refrescar() => InvokeAsync(StateHasChanged);
+
+    private static string Clase(TipoToast tipo) => tipo switch
+    {
+        TipoToast.Exito => "toast-exito",
+        TipoToast.Error => "toast-error",
+        _ => "toast-info"
+    };
+
+    private static string Icono(TipoToast tipo) => tipo switch
+    {
+        TipoToast.Exito => "✔",
+        TipoToast.Error => "⚠",
+        _ => "ℹ"
+    };
+
+    public void Dispose() => ToastService.OnChange -= Refrescar;
+}

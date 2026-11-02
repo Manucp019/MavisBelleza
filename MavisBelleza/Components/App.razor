@@ -4,33 +4,31 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Mavis Belleza - Studio especializado en cejas y pestañas. Reservá tu turno online." />
     <base href="/" />
+
+    <meta name="theme-color" content="#141414" />
+
+    <!-- Tipografías: Amatic SC (manuscrita, como las letras del logo) y Quicksand (texto) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Quicksand:wght@400;500;600;700&display=swap" />
+
+    <!-- 1) Bootstrap 5 -->
     <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
-    <!-- El CSS generado por Blazor va primero -->
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <base href="/" />
-        <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
-        <link rel="stylesheet" href="css/app.css?v=2.0" />
-        <link rel="icon" type="image/png" href="favicon.png" />
-        <HeadOutlet />
-    </head>    <!-- Tu archivo app.css va AL FINAL para sobrescribir todo lo demás -->
-    <link rel="stylesheet" href="css/app.css?v=1.3" />
+    <!-- 2) Estilos globales de la app (paleta, botones, inputs) -->
+    <link rel="stylesheet" href="app.css?v=5" />
+    <link rel="stylesheet" href="MavisBelleza.styles.css?v=5" />
     <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet />
+    <link rel="apple-touch-icon" href="img/apple-touch-icon.png" />
+    <HeadOutlet @rendermode="InteractiveServer" />
 </head>
 
 <body>
-    <Routes />
-    <script src="_framework/blazor.web.js"></script>
+    <!-- Interactividad global: todas las páginas corren en modo Interactive Server -->
+    <Routes @rendermode="InteractiveServer" />
 
-    <!-- JS Interop: Función global de alerta para cumplimiento de Unidad 2 -->
-    <script>
-        window.mostrarAlerta = function (mensaje) {
-            alert(mensaje);
-        };
-    </script>
+    <script src="_framework/blazor.web.js"></script>
 </body>
 
 </html>

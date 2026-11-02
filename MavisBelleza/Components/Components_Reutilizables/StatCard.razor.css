@@ -1,0 +1,58 @@
+﻿/* CSS Isolation: StatCard */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    height: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: 20px;
+    background-color: #fff;
+    border: 1px solid var(--borde-suave);
+    box-shadow: 0 6px 16px rgba(19, 137, 58, 0.06);
+    color: inherit;
+    text-decoration: none;
+}
+
+.stat-link {
+    transition: transform 0.15s ease;
+}
+
+    .stat-link:hover {
+        transform: translateY(-2px);
+        color: inherit;
+    }
+
+.stat-icono {
+    display: grid;
+    place-items: center;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 14px;
+    font-size: 1.3rem;
+    background-color: var(--verde-agua-fondo);
+}
+
+.stat-dorado .stat-icono {
+    background-color: var(--dorado-suave);
+}
+
+.stat-oscuro .stat-icono {
+    background-color: var(--negro-marca);
+}
+
+.stat-texto {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.stat-valor {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--negro-marca);
+}
+
+.stat-titulo {
+    font-size: 0.8rem;
+    color: #6c757d;
+}

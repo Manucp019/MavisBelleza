@@ -1,0 +1,27 @@
+﻿@* Tarjeta de indicador (KPI). Opcionalmente es un link (Href). *@
+@if (string.IsNullOrEmpty(Href))
+{
+    <div class="stat-card stat-@Variante">@Contenido</div>
+}
+else
+{
+    <a href="@Href" class="stat-card stat-@Variante stat-link">@Contenido</a>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Titulo { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Valor { get; set; } = string.Empty;
+    [Parameter] public string Icono { get; set; } = "📊";
+
+    /// <summary>verde | dorado | oscuro</summary>
+    [Parameter] public string Variante { get; set; } = "verde";
+    [Parameter] public string? Href { get; set; }
+
+    private RenderFragment Contenido => @<text>
+        <span class="stat-icono" aria-hidden="true">@Icono</span>
+        <span class="stat-texto">
+            <span class="stat-valor">@Valor</span>
+            <span class="stat-titulo">@Titulo</span>
+        </span>
+    </text>;
+}
